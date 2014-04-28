@@ -3,7 +3,9 @@ title       : Complex Portfolio Optimization with PortfolioAnalytics
 subtitle    : R/Finance 2014
 author      : Ross Bennett
 date        : May 16, 2014
+framework   : io2012 # {io2012, html5slides, shower, dzslides, ...}
 ext_widgets : {rCharts: libraries/nvd3}
+widgets     : mathjax
 mode        : selfcontained
 ---
 
@@ -446,14 +448,13 @@ plot(opt.dn, main="Dollar Neutral Portfolio", risk.col="StdDev", neighbors=10)
 ## Example 3: Data Setup
 Here we will look at portfolio optimization in the context of portfolio of hedge funds.
 
-* EDHEC-Risk Alternative Indexes
-* Monthly returns from 1/31/1997 to 1/31/2014
-    * Convertible Arbitrage (CA)
-    * Equity Market Neutral (EMN)
-    * Fixed Income Arbitrage (FIA)
-    * CTA Global (CTAG)
-    * Emerging Markets (EM)
-    * Global Macro (GM)
+* EDHEC-Risk Alternative Indexes monthly returns from 1/31/1997 to 1/31/2014
+
+Relative Value | Directional
+-------------- | -----------
+Convertible Arbitrage (CA) | CTA Global (CTAG)
+Equity Market Neutral (EMN) | Emerging Markets (EM)
+Fixed Income Arbitrage (FIA) | Global Macro (GM)
 
 ```{r, eval=FALSE, tidy=FALSE}
 R <- edhec[,c("Convertible.Arbitrage", "Equity.Market.Neutral", 
