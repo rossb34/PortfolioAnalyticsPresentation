@@ -11,8 +11,8 @@ OUT_FILES:= $(RFILES:.R=.Rout)
 
 all: $(OUT_FILES) slidy_presentation.html presentation.Rmd
 
-Presentation.html: Presentation.Rmd
-	Rscript -e "library(slidify); slidify('Presentation.Rmd')"
+presentation.html: presentation.Rmd
+	Rscript -e "library(slidify); slidify('presentation.Rmd')"
 
 # Generate slidy presentation from markdown file
 slidy_presentation.html: $(RFILES) $(OUT_FILES) presentation.md
