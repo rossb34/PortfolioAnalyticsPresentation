@@ -133,7 +133,7 @@ The grid method to generate random portfolios is based on the gridSearch functio
 ---
 
 ## Comparison of Random Portfolio Methods
-![](optimization_figures/rp_plot.png)
+![](figures/rp_plot.png)
 
 <!---
 This chart is a prime candidate for an interactive viz
@@ -142,12 +142,12 @@ This chart is a prime candidate for an interactive viz
 ---
 
 ## Random Portfolios: Simplex Method
-![](optimization_figures/fev_plot.png)
+![](figures/fev_plot.png)
 
 ---
 
 ## Workflow
-![](misc_figures/workflow.png)
+![](figures/workflow.png)
 
 <!---
 Describe each function:
@@ -255,7 +255,7 @@ equity.data <- cbind(largecap_weekly[,1:15],
 ---
 
 ## Distribution of Monthly Returns
-![](data_figures/equity_box.png)
+![](figures/equity_box.png)
 
 ---
 
@@ -337,14 +337,14 @@ Explain each of the rebalancing parameters
 chart.Weights(opt.minVarSample, main="minVarSample Weights", legend.loc=NULL)
 chart.Weights(opt.minVarLW, main="minVarLW Weights", legend.loc=NULL)
 ```
-![](optimization_figures/weights_minVarSample.png)
-![](optimization_figures/weights_minVarLW.png)
+![](figures/weights_minVarSample.png)
+![](figures/weights_minVarLW.png)
 
 ---
 
 ## Chart Weights Through Time
 ```{r, results = 'asis', comment = NA, message = F, echo = F}
-load("optimization_figures/w1.rda")
+load("figures/w1.rda")
 w1$show('inline')
 ```
 
@@ -359,7 +359,7 @@ ret.minVar <- cbind(ret.minVarSample, ret.minVarRobust)
 colnames(ret.minVar) <- c("Sample", "LW")
 charts.PerformanceSummary(ret.minVar)
 ```
-![](optimization_figures/ret_minVar.png)
+![](figures/ret_minVar.png)
 
 ---
 
@@ -439,7 +439,7 @@ generate a set of random portfolios and then pass directly to optimize.portfolio
 ```{r, eval=FALSE, tidy=FALSE}
 plot(opt.dn, main="Dollar Neutral Portfolio", risk.col="StdDev", neighbors=10)
 ```
-![](optimization_figures/opt_dn.png)
+![](figures/opt_dn.png)
 
 ---
 
@@ -466,13 +466,13 @@ colnames(R) <- c("CA", "EMN", "FIA", "CTAG", "EM", "GM")
 ---
 
 ## Monthly Returns
-![](data_figures/relative_barvar.png)
-![](data_figures/directional_barvar.png)
+![](figures/relative_barvar.png)
+![](figures/directional_barvar.png)
 
 ---
 
 ## Distribution of Monthly Returns
-![](data_figures/edhec_box.png)
+![](figures/edhec_box.png)
 
 ---
 
@@ -564,7 +564,7 @@ explain how portf is a list of portfolios and passed to optimize.portfolio
 ---
 
 ## Plot in Risk-Return Space
-![](optimization_figures/opt_minES.png)
+![](figures/opt_minES.png)
 
 ---
 
@@ -576,8 +576,8 @@ chart.RiskBudget(opt.minES[[2]], main="Risk Budget Limit",
 chart.RiskBudget(opt.minES[[3]], main="Equal ES Component Contribution", 
                  risk.type="percentage", neighbors=10)
 ```
-![](optimization_figures/rb_minES.png)
-![](optimization_figures/eqrb_minES.png)
+![](figures/rb_minES.png)
+![](figures/eqrb_minES.png)
 
 ---
 
@@ -604,20 +604,20 @@ bt.opt.minES <- optimize.portfolio.rebalancing(R, portf,
 ---
 
 ## Min ES Risk Contributions and Weights Through Time
-![](optimization_figures/risk_minES.png)
-![](optimization_figures/weights_minES.png)
+![](figures/risk_minES.png)
+![](figures/weights_minES.png)
 
 ---
 
 ## Min ES Risk Budget Limit Risk Contributions and Weights Through Time
-![](optimization_figures/risk_minESRB.png)
-![](optimization_figures/weights_minESRB.png)
+![](figures/risk_minESRB.png)
+![](figures/weights_minESRB.png)
 
 ---
 
 ## Min ES Equal Component Contribution Risk Contributions and Weights Through Time
-![](optimization_figures/risk_minESEqRB.png)
-![](optimization_figures/weights_minESEqRB.png)
+![](figures/risk_minESEqRB.png)
+![](figures/weights_minESEqRB.png)
 
 ---
 
@@ -628,7 +628,7 @@ ret.bt.opt <- do.call(cbind, lapply(bt.opt.minES,
 colnames(ret.bt.opt) <- c("min ES", "min ES RB", "min ES Eq RB")
 charts.PerformanceSummary(ret.bt.opt)
 ```
-![](optimization_figures/ret_minES.png)
+![](figures/ret_minES.png)
 
 ---
 
@@ -726,8 +726,8 @@ chart.RiskReward(opt.crra, risk.col="ES")
 chart.RiskReward(opt.crra, risk.col="StdDev")
 ```
 
-![](optimization_figures/crra_RR_ES.png)
-![](optimization_figures/crra_RR_StdDev.png)
+![](figures/crra_RR_ES.png)
+![](figures/crra_RR_StdDev.png)
 
 ---
 
@@ -757,7 +757,7 @@ Run optimization and extract the portfolio rebalancing returns from the summary 
 charts.PerformanceSummary(cbind(ret.bt.opt, ret.crra), 
                           main="Optimization Performance")
 ```
-![](optimization_figures/ret_crra.png)
+![](figures/ret_crra.png)
 
 ---
 

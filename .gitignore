@@ -7,5 +7,9 @@
 # R data files from past sessions
 .Rdata
 
+# R out files generated with R CMD BATCH
+.Rout
+
+# OS specific files
 .DS_store
 

@@ -9,7 +9,7 @@ RFILES := data_prep.R data_analysis.R optimize.R optimization_analysis.R
 OUT_FILES:= $(RFILES:.R=.Rout)
 
 
-all: $(OUT_FILES) index.html presentation.Rmd
+all: $(OUT_FILES) slidy_presentation.html presentation.Rmd
 
 Presentation.html: Presentation.Rmd
 	Rscript -e "library(slidify); slidify('Presentation.Rmd')"

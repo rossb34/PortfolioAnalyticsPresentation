@@ -183,7 +183,7 @@ CRRA <- function(R, weights, lambda, sigma, m3, m4){
 # Chart the optimization in Risk-Reward space
 png(paste(figures.dir, "crra_RR_ES.png", sep="/"))
 chart.RiskReward(opt.crra, risk.col="ES")
-# dev.off()
+dev.off()
 
 png(paste(figures.dir, "crra_RR_StdDev.png", sep="/"))
 chart.RiskReward(opt.crra, risk.col="StdDev")
