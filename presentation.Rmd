@@ -215,32 +215,18 @@ args(optimize.portfolio)
 args(optimize.portfolio.rebalancing)
 ```
 
-Supported Optimization Methods
-
-* ROI
-* random
-* DEoptim
-* pso
-* GenSA
-
 ---
 
 ## Workflow: Analyze Results
 
-*** =left
-
-* plot
-* chart.Concentration
-* chart.EfficientFrontier
-* chart.RiskBudget
-* chart.RiskReward
-* chart.Weights
-
-***=right
-
-* extractObjectiveMeasures
-* extractStats
-* extractWeights
+Visualization | Data Extraction
+------------- | ----------
+plot | extractObjectiveMeasures
+chart.Concentration | extractStats
+chart.EfficientFrontier | extractWeights
+chart.RiskBudget | print
+chart.RiskReward | summary
+chart.Weights | 
 
 <!---
 I'd like to make this a two column slide if possible. Might have to try slidify.
@@ -352,7 +338,7 @@ chart.Weights(opt.minVarLW, main="minVarLW Weights", legend.loc=NULL)
 
 ---
 
-## Chart Weights Through Time
+## Chart Weights Through Time (interactive!)
 ```{r, results = 'asis', comment = NA, message = F, echo = F}
 load("figures/w1.rda")
 w1$show('inline')
@@ -360,13 +346,18 @@ w1$show('inline')
 
 ---
 
-## Returns
-Compute the portfolio rebalancing returns and chart the performance.
+## Compute Returns
 ```{r, eval=FALSE}
 ret.minVarSample <- summary(opt.minVarSample)$portfolio_returns
 ret.minVarRobust <- summary(opt.minVarLW)$portfolio_returns
 ret.minVar <- cbind(ret.minVarSample, ret.minVarRobust)
 colnames(ret.minVar) <- c("Sample", "LW")
+```
+
+---
+
+## Chart Performance
+```{r, eval=FALSE}
 charts.PerformanceSummary(ret.minVar)
 ```
 ![](figures/ret_minVar.png)
@@ -397,10 +388,8 @@ portf.dn <- add.constraint(portf.dn, type="box", min=-0.2, max=0.2)
 # Add constraint such that we have at most 20 positions
 portf.dn <- add.constraint(portf.dn, type="position_limit", max_pos=20)
 
-# Compute the betas of each stock
-betas <- t(CAPM.beta(equity.data, market, Rf))
-
 # Add constraint such that the portfolio beta is between -0.25 and 0.25
+betas <- t(CAPM.beta(equity.data, market, Rf))
 portf.dn <- add.constraint(portf.dn, type="factor_exposure", B=betas, 
                            lower=-0.25, upper=0.25)
 ```
@@ -578,7 +567,7 @@ explain how portf is a list of portfolios and passed to optimize.portfolio
 ---
 
 ## Chart Risk Budgets
-```{r, eval=FALSE, tidy=FALSE}
+```{r, echo=FALSE, eval=FALSE, tidy=FALSE}
 chart.RiskBudget(opt.minES[[2]], main="Risk Budget Limit", 
                  risk.type="percentage", neighbors=10)
 
@@ -630,11 +619,17 @@ bt.opt.minES <- optimize.portfolio.rebalancing(R, portf,
 
 ---
 
-## Compute Returns and Chart Performance
+## Compute Returns
 ```{r, eval=FALSE, tidy=FALSE}
 ret.bt.opt <- do.call(cbind, lapply(bt.opt.minES, 
                                     function(x) summary(x)$portfolio_returns))
 colnames(ret.bt.opt) <- c("min ES", "min ES RB", "min ES Eq RB")
+```
+
+---
+
+## Chart Performance
+```{r, eval=FALSE, tidy=FALSE}
 charts.PerformanceSummary(ret.bt.opt)
 ```
 ![](figures/ret_minES.png)
@@ -694,7 +689,16 @@ portf.crra <- add.constraint(portf.crra, type="box",
 # Add objective to maximize CRRA
 portf.crra <- add.objective(portf.crra, type="return", 
                             name="CRRA", arguments=list(lambda=10))
+```
 
+<!---
+Focus on how CRRA is added as an objective
+-->
+
+---
+
+## "Dummy" Objectives
+```{r, eval=FALSE, tidy=FALSE}
 # I just want these for plotting
 # Set multiplier=0 so that it is calculated, but does not affect the optimization
 portf.crra <- add.objective(portf.crra, type="return", name="mean", multiplier=0)
@@ -703,7 +707,7 @@ portf.crra <- add.objective(portf.crra, type="risk", name="StdDev", multiplier=0
 ```
 
 <!---
-Focus on how CRRA is added as an objective
+Explain what multiplier = 0 is doing
 -->
 
 ---
@@ -719,7 +723,7 @@ opt.crra <- optimize.portfolio(R, portf.crra, optimize_method="DEoptim",
 load("optimization_results/opt.crra.rda")
 ```
 ```{r, tidy=FALSE, cache=TRUE}
-opt.crra
+head(extractStats(opt.crra),4)
 ```
 
 

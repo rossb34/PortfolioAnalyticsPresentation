@@ -37642,16 +37642,6 @@ Just give a general description of the functions to analyze results
 ## NULL
 </code></pre>
 
-<p>Supported Optimization Methods</p>
-
-<ul>
-<li>ROI</li>
-<li>random</li>
-<li>DEoptim</li>
-<li>pso</li>
-<li>GenSA</li>
-</ul>
-
   </article>
   <!-- Presenter Notes -->
 </slide>
@@ -37661,7 +37651,42 @@ Just give a general description of the functions to analyze results
     <h2>Workflow: Analyze Results</h2>
   </hgroup>
   <article data-timings="">
-    
+    <table><thead>
+<tr>
+<th>Visualization</th>
+<th>Data Extraction</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>plot</td>
+<td>extractObjectiveMeasures</td>
+</tr>
+<tr>
+<td>chart.Concentration</td>
+<td>extractStats</td>
+</tr>
+<tr>
+<td>chart.EfficientFrontier</td>
+<td>extractWeights</td>
+</tr>
+<tr>
+<td>chart.RiskBudget</td>
+<td>print</td>
+</tr>
+<tr>
+<td>chart.RiskReward</td>
+<td>summary</td>
+</tr>
+<tr>
+<td>chart.Weights</td>
+<td></td>
+</tr>
+</tbody></table>
+
+<!---
+I'd like to make this a two column slide if possible. Might have to try slidify.
+-->
+
   </article>
   <!-- Presenter Notes -->
 </slide>
@@ -37813,7 +37838,7 @@ chart.Weights(opt.minVarLW, main = &quot;minVarLW Weights&quot;, legend.loc = NU
 
 <slide class="" id="slide-23" style="background:;">
   <hgroup>
-    <h2>Chart Weights Through Time</h2>
+    <h2>Chart Weights Through Time (interactive!)</h2>
   </hgroup>
   <article data-timings="">
     <div id = 'chart69459f50a5' class = 'rChart nvd3'></div>
@@ -42446,16 +42471,25 @@ chart.Weights(opt.minVarLW, main = &quot;minVarLW Weights&quot;, legend.loc = NU
 
 <slide class="" id="slide-24" style="background:;">
   <hgroup>
-    <h2>Returns</h2>
+    <h2>Compute Returns</h2>
   </hgroup>
   <article data-timings="">
-    <p>Compute the portfolio rebalancing returns and chart the performance.</p>
-
-<pre><code class="r">ret.minVarSample &lt;- summary(opt.minVarSample)$portfolio_returns
+    <pre><code class="r">ret.minVarSample &lt;- summary(opt.minVarSample)$portfolio_returns
 ret.minVarRobust &lt;- summary(opt.minVarLW)$portfolio_returns
 ret.minVar &lt;- cbind(ret.minVarSample, ret.minVarRobust)
 colnames(ret.minVar) &lt;- c(&quot;Sample&quot;, &quot;LW&quot;)
-charts.PerformanceSummary(ret.minVar)
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-25" style="background:;">
+  <hgroup>
+    <h2>Chart Performance</h2>
+  </hgroup>
+  <article data-timings="">
+    <pre><code class="r">charts.PerformanceSummary(ret.minVar)
 </code></pre>
 
 <p><img src="figures/ret_minVar.png" alt=""></p>
@@ -42464,7 +42498,7 @@ charts.PerformanceSummary(ret.minVar)
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-25" style="background:;">
+<slide class="" id="slide-26" style="background:;">
   <hgroup>
     <h2>Example 2: Market Neutral Portfolio</h2>
   </hgroup>
@@ -42479,7 +42513,7 @@ This involves combining several constraints. This is an MIQPQC problem that can'
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-26" style="background:;">
+<slide class="" id="slide-27" style="background:;">
   <hgroup>
     <h2>Specify Portfolio: Constraints</h2>
   </hgroup>
@@ -42497,10 +42531,8 @@ portf.dn &lt;- add.constraint(portf.dn, type=&quot;box&quot;, min=-0.2, max=0.2)
 # Add constraint such that we have at most 20 positions
 portf.dn &lt;- add.constraint(portf.dn, type=&quot;position_limit&quot;, max_pos=20)
 
-# Compute the betas of each stock
-betas &lt;- t(CAPM.beta(equity.data, market, Rf))
-
 # Add constraint such that the portfolio beta is between -0.25 and 0.25
+betas &lt;- t(CAPM.beta(equity.data, market, Rf))
 portf.dn &lt;- add.constraint(portf.dn, type=&quot;factor_exposure&quot;, B=betas, 
                            lower=-0.25, upper=0.25)
 </code></pre>
@@ -42513,7 +42545,7 @@ explain the constraints
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-27" style="background:;">
+<slide class="" id="slide-28" style="background:;">
   <hgroup>
     <h2>Specify Portfolio: Objectives</h2>
   </hgroup>
@@ -42535,7 +42567,7 @@ explain the objectives, specifically the target
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-28" style="background:;">
+<slide class="" id="slide-29" style="background:;">
   <hgroup>
     <h2>Run Optimization</h2>
   </hgroup>
@@ -42557,7 +42589,7 @@ generate a set of random portfolios and then pass directly to optimize.portfolio
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-29" style="background:;">
+<slide class="" id="slide-30" style="background:;">
   <hgroup>
     <h2>Plot Results</h2>
   </hgroup>
@@ -42571,7 +42603,7 @@ generate a set of random portfolios and then pass directly to optimize.portfolio
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-30" style="background:;">
+<slide class="" id="slide-31" style="background:;">
   <hgroup>
     <h2>Example 3: Data Setup</h2>
   </hgroup>
@@ -42613,7 +42645,7 @@ colnames(R) &lt;- c(&quot;CA&quot;, &quot;EMN&quot;, &quot;FIA&quot;, &quot;CTAG
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-31" style="background:;">
+<slide class="" id="slide-32" style="background:;">
   <hgroup>
     <h2>Monthly Returns</h2>
   </hgroup>
@@ -42625,7 +42657,7 @@ colnames(R) &lt;- c(&quot;CA&quot;, &quot;EMN&quot;, &quot;FIA&quot;, &quot;CTAG
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-32" style="background:;">
+<slide class="" id="slide-33" style="background:;">
   <hgroup>
     <h2>Distribution of Monthly Returns</h2>
   </hgroup>
@@ -42636,7 +42668,7 @@ colnames(R) &lt;- c(&quot;CA&quot;, &quot;EMN&quot;, &quot;FIA&quot;, &quot;CTAG
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-33" style="background:;">
+<slide class="" id="slide-34" style="background:;">
   <hgroup>
     <h2>Minimum Expected Shortfall</h2>
   </hgroup>
@@ -42661,7 +42693,7 @@ comments
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-34" style="background:;">
+<slide class="" id="slide-35" style="background:;">
   <hgroup>
     <h2>Specify Initial Portfolio</h2>
   </hgroup>
@@ -42693,7 +42725,7 @@ basic comments about setting up an initial portfolio
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-35" style="background:;">
+<slide class="" id="slide-36" style="background:;">
   <hgroup>
     <h2>Add Objectives</h2>
   </hgroup>
@@ -42724,7 +42756,7 @@ Key points here are that we are creating 3 new portfolios by reusing the initial
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-36" style="background:;">
+<slide class="" id="slide-37" style="background:;">
   <hgroup>
     <h2>Run Optimization</h2>
   </hgroup>
@@ -42747,7 +42779,7 @@ explain how portf is a list of portfolios and passed to optimize.portfolio
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-37" style="background:;">
+<slide class="" id="slide-38" style="background:;">
   <hgroup>
     <h2>Plot in Risk-Return Space</h2>
   </hgroup>
@@ -42758,26 +42790,19 @@ explain how portf is a list of portfolios and passed to optimize.portfolio
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-38" style="background:;">
+<slide class="" id="slide-39" style="background:;">
   <hgroup>
     <h2>Chart Risk Budgets</h2>
   </hgroup>
   <article data-timings="">
-    <pre><code class="r">chart.RiskBudget(opt.minES[[2]], main=&quot;Risk Budget Limit&quot;, 
-                 risk.type=&quot;percentage&quot;, neighbors=10)
-
-chart.RiskBudget(opt.minES[[3]], main=&quot;Equal ES Component Contribution&quot;, 
-                 risk.type=&quot;percentage&quot;, neighbors=10)
-</code></pre>
-
-<p><img src="figures/rb_minES.png" alt="">
+    <p><img src="figures/rb_minES.png" alt="">
 <img src="figures/eqrb_minES.png" alt=""></p>
 
   </article>
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-39" style="background:;">
+<slide class="" id="slide-40" style="background:;">
   <hgroup>
     <h2>Set Rebalancing Parameters and Run Backtest</h2>
   </hgroup>
@@ -42804,7 +42829,7 @@ bt.opt.minES &lt;- optimize.portfolio.rebalancing(R, portf,
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-40" style="background:;">
+<slide class="" id="slide-41" style="background:;">
   <hgroup>
     <h2>Min ES Risk Contributions and Weights Through Time</h2>
   </hgroup>
@@ -42816,7 +42841,7 @@ bt.opt.minES &lt;- optimize.portfolio.rebalancing(R, portf,
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-41" style="background:;">
+<slide class="" id="slide-42" style="background:;">
   <hgroup>
     <h2>Min ES Risk Budget Limit Risk Contributions and Weights Through Time</h2>
   </hgroup>
@@ -42828,7 +42853,7 @@ bt.opt.minES &lt;- optimize.portfolio.rebalancing(R, portf,
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-42" style="background:;">
+<slide class="" id="slide-43" style="background:;">
   <hgroup>
     <h2>Min ES Equal Component Contribution Risk Contributions and Weights Through Time</h2>
   </hgroup>
@@ -42840,15 +42865,26 @@ bt.opt.minES &lt;- optimize.portfolio.rebalancing(R, portf,
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-43" style="background:;">
+<slide class="" id="slide-44" style="background:;">
   <hgroup>
-    <h2>Compute Returns and Chart Performance</h2>
+    <h2>Compute Returns</h2>
   </hgroup>
   <article data-timings="">
     <pre><code class="r">ret.bt.opt &lt;- do.call(cbind, lapply(bt.opt.minES, 
                                     function(x) summary(x)$portfolio_returns))
 colnames(ret.bt.opt) &lt;- c(&quot;min ES&quot;, &quot;min ES RB&quot;, &quot;min ES Eq RB&quot;)
-charts.PerformanceSummary(ret.bt.opt)
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-45" style="background:;">
+  <hgroup>
+    <h2>Chart Performance</h2>
+  </hgroup>
+  <article data-timings="">
+    <pre><code class="r">charts.PerformanceSummary(ret.bt.opt)
 </code></pre>
 
 <p><img src="figures/ret_minES.png" alt=""></p>
@@ -42857,7 +42893,7 @@ charts.PerformanceSummary(ret.bt.opt)
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-44" style="background:;">
+<slide class="" id="slide-46" style="background:;">
   <hgroup>
     <h2>Example 4: Maximize CRRA</h2>
   </hgroup>
@@ -42878,7 +42914,7 @@ Demonstrate a custom moment function and a custom objective function.
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-45" style="background:;">
+<slide class="" id="slide-47" style="background:;">
   <hgroup>
     <h2>Define a function to compute CRRA</h2>
   </hgroup>
@@ -42904,7 +42940,7 @@ The function arguments should have 'R' as the name of the returns and 'weights' 
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-46" style="background:;">
+<slide class="" id="slide-48" style="background:;">
   <hgroup>
     <h2>Specify Portfolio</h2>
   </hgroup>
@@ -42924,12 +42960,6 @@ portf.crra &lt;- add.constraint(portf.crra, type=&quot;box&quot;,
 # Add objective to maximize CRRA
 portf.crra &lt;- add.objective(portf.crra, type=&quot;return&quot;, 
                             name=&quot;CRRA&quot;, arguments=list(lambda=10))
-
-# I just want these for plotting
-# Set multiplier=0 so that it is calculated, but does not affect the optimization
-portf.crra &lt;- add.objective(portf.crra, type=&quot;return&quot;, name=&quot;mean&quot;, multiplier=0)
-portf.crra &lt;- add.objective(portf.crra, type=&quot;risk&quot;, name=&quot;ES&quot;, multiplier=0)
-portf.crra &lt;- add.objective(portf.crra, type=&quot;risk&quot;, name=&quot;StdDev&quot;, multiplier=0)
 </code></pre>
 
 <!---
@@ -42940,7 +42970,27 @@ Focus on how CRRA is added as an objective
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-47" style="background:;">
+<slide class="" id="slide-49" style="background:;">
+  <hgroup>
+    <h2>&quot;Dummy&quot; Objectives</h2>
+  </hgroup>
+  <article data-timings="">
+    <pre><code class="r"># I just want these for plotting
+# Set multiplier=0 so that it is calculated, but does not affect the optimization
+portf.crra &lt;- add.objective(portf.crra, type=&quot;return&quot;, name=&quot;mean&quot;, multiplier=0)
+portf.crra &lt;- add.objective(portf.crra, type=&quot;risk&quot;, name=&quot;ES&quot;, multiplier=0)
+portf.crra &lt;- add.objective(portf.crra, type=&quot;risk&quot;, name=&quot;StdDev&quot;, multiplier=0)
+</code></pre>
+
+<!---
+Explain what multiplier = 0 is doing
+-->
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-50" style="background:;">
   <hgroup>
     <h2>Run Optimization</h2>
   </hgroup>
@@ -42950,36 +43000,19 @@ Focus on how CRRA is added as an objective
                                  momentFUN=&quot;crra.moments&quot;)
 </code></pre>
 
-<pre><code class="r">opt.crra
+<pre><code class="r">head(extractStats(opt.crra),4)
 </code></pre>
 
-<pre><code>## ***********************************
-## PortfolioAnalytics Optimization
-## ***********************************
-## 
-## Call:
-## optimize.portfolio(R = R, portfolio = portf.crra, optimize_method = &quot;DEoptim&quot;, 
-##     search_size = 5000, trace = TRUE, traceDE = 0, momentFUN = &quot;crra.moments&quot;)
-## 
-## Optimal Weights:
-##    CA   EMN   FIA  CTAG    EM    GM 
-## 0.062 0.382 0.344 0.094 0.050 0.072 
-## 
-## Objective Measures:
-##       CRRA 
-## -0.0005303 
-## 
-## 
-##     mean 
-## 0.005418 
-## 
-## 
-##     ES 
-## 0.0307 
-## 
-## 
-##   StdDev 
-## 0.009984
+<pre><code>##              CRRA.CRRA     mean      ES  StdDev       out   w.CA  w.EMN
+## .DE.portf.1 -0.0009786 0.005906 0.03407 0.01367 0.0009786 0.1667 0.1667
+## .DE.portf.2 -0.0007585 0.005716 0.02532 0.01215 0.0007585 0.1560 0.3420
+## .DE.portf.3 -0.0019451 0.006380 0.05068 0.01901 0.0019451 0.1180 0.1200
+## .DE.portf.4 -0.0007816 0.005536 0.02591 0.01232 0.0007816 0.0900 0.1840
+##              w.FIA w.CTAG   w.EM   w.GM
+## .DE.portf.1 0.1667 0.1667 0.1667 0.1667
+## .DE.portf.2 0.0560 0.2180 0.1280 0.0920
+## .DE.portf.3 0.0880 0.1300 0.3900 0.1620
+## .DE.portf.4 0.2800 0.2720 0.1160 0.0640
 </code></pre>
 
 <!---
@@ -42990,7 +43023,7 @@ remember to specify a momentFUN to match the arguments in CRRA
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-48" style="background:;">
+<slide class="" id="slide-51" style="background:;">
   <hgroup>
     <h2>Chart Results</h2>
   </hgroup>
@@ -43006,7 +43039,7 @@ chart.RiskReward(opt.crra, risk.col = &quot;StdDev&quot;)
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-49" style="background:;">
+<slide class="" id="slide-52" style="background:;">
   <hgroup>
     <h2>Run Backtest and Compute Returns</h2>
   </hgroup>
@@ -43032,7 +43065,7 @@ Run optimization and extract the portfolio rebalancing returns from the summary 
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-50" style="background:;">
+<slide class="" id="slide-53" style="background:;">
   <hgroup>
     <h2>Chart Performance</h2>
   </hgroup>
@@ -43047,7 +43080,7 @@ Run optimization and extract the portfolio rebalancing returns from the summary 
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-51" style="background:;">
+<slide class="" id="slide-54" style="background:;">
   <hgroup>
     <h2>Conclusion</h2>
   </hgroup>
@@ -43080,7 +43113,7 @@ Run optimization and extract the portfolio rebalancing returns from the summary 
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-52" style="background:;">
+<slide class="" id="slide-55" style="background:;">
   <hgroup>
     <h2>References and Useful Links</h2>
   </hgroup>
@@ -43241,182 +43274,200 @@ Run optimization and extract the portfolio rebalancing returns from the summary 
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=23 title='Chart Weights Through Time'>
+        data-slide=23 title='Chart Weights Through Time (interactive!)'>
          23
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=24 title='Returns'>
+        data-slide=24 title='Compute Returns'>
          24
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=25 title='Example 2: Market Neutral Portfolio'>
+        data-slide=25 title='Chart Performance'>
          25
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=26 title='Specify Portfolio: Constraints'>
+        data-slide=26 title='Example 2: Market Neutral Portfolio'>
          26
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=27 title='Specify Portfolio: Objectives'>
+        data-slide=27 title='Specify Portfolio: Constraints'>
          27
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=28 title='Run Optimization'>
+        data-slide=28 title='Specify Portfolio: Objectives'>
          28
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=29 title='Plot Results'>
+        data-slide=29 title='Run Optimization'>
          29
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=30 title='Example 3: Data Setup'>
+        data-slide=30 title='Plot Results'>
          30
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=31 title='Monthly Returns'>
+        data-slide=31 title='Example 3: Data Setup'>
          31
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=32 title='Distribution of Monthly Returns'>
+        data-slide=32 title='Monthly Returns'>
          32
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=33 title='Minimum Expected Shortfall'>
+        data-slide=33 title='Distribution of Monthly Returns'>
          33
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=34 title='Specify Initial Portfolio'>
+        data-slide=34 title='Minimum Expected Shortfall'>
          34
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=35 title='Add Objectives'>
+        data-slide=35 title='Specify Initial Portfolio'>
          35
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=36 title='Run Optimization'>
+        data-slide=36 title='Add Objectives'>
          36
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=37 title='Plot in Risk-Return Space'>
+        data-slide=37 title='Run Optimization'>
          37
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=38 title='Chart Risk Budgets'>
+        data-slide=38 title='Plot in Risk-Return Space'>
          38
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=39 title='Set Rebalancing Parameters and Run Backtest'>
+        data-slide=39 title='Chart Risk Budgets'>
          39
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=40 title='Min ES Risk Contributions and Weights Through Time'>
+        data-slide=40 title='Set Rebalancing Parameters and Run Backtest'>
          40
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=41 title='Min ES Risk Budget Limit Risk Contributions and Weights Through Time'>
+        data-slide=41 title='Min ES Risk Contributions and Weights Through Time'>
          41
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=42 title='Min ES Equal Component Contribution Risk Contributions and Weights Through Time'>
+        data-slide=42 title='Min ES Risk Budget Limit Risk Contributions and Weights Through Time'>
          42
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=43 title='Compute Returns and Chart Performance'>
+        data-slide=43 title='Min ES Equal Component Contribution Risk Contributions and Weights Through Time'>
          43
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=44 title='Example 4: Maximize CRRA'>
+        data-slide=44 title='Compute Returns'>
          44
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=45 title='Define a function to compute CRRA'>
+        data-slide=45 title='Chart Performance'>
          45
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=46 title='Specify Portfolio'>
+        data-slide=46 title='Example 4: Maximize CRRA'>
          46
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=47 title='Run Optimization'>
+        data-slide=47 title='Define a function to compute CRRA'>
          47
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=48 title='Chart Results'>
+        data-slide=48 title='Specify Portfolio'>
          48
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=49 title='Run Backtest and Compute Returns'>
+        data-slide=49 title='&quot;Dummy&quot; Objectives'>
          49
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=50 title='Chart Performance'>
+        data-slide=50 title='Run Optimization'>
          50
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=51 title='Conclusion'>
+        data-slide=51 title='Chart Results'>
          51
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=52 title='References and Useful Links'>
+        data-slide=52 title='Run Backtest and Compute Returns'>
          52
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=53 title='Chart Performance'>
+         53
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=54 title='Conclusion'>
+         54
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=55 title='References and Useful Links'>
+         55
       </a>
     </li>
   </ul>
