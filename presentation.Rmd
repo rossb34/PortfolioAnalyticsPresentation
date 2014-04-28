@@ -143,6 +143,14 @@ This chart is a prime candidate for an interactive viz
 
 ---
 
+## Comparison of Random Portfolio Methods (Interactive!)
+```{r, results = 'asis', comment = NA, message = F, echo = F}
+load("figures/rp_viz.rda")
+rp_viz$show('inline')
+```
+
+---
+
 ## Random Portfolios: Simplex Method
 ![](figures/fev_plot.png)
 

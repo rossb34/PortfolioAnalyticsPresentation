@@ -351,11 +351,11 @@ if(file.exists("figures/rp_plot.png")){
   
   # Use the long only portfolio previously created
   # Generate random portfolios using the 3 methods
-  rp1 <- random_portfolios(portf.lo, permutations=5000, 
+  rp1 <- random_portfolios(portf.lo, permutations=2000, 
                            rp_method='sample')
-  rp2 <- random_portfolios(portf.lo, permutations=5000, 
+  rp2 <- random_portfolios(portf.lo, permutations=2000, 
                            rp_method='simplex') 
-  rp3 <- random_portfolios(portf.lo, permutations=5000, 
+  rp3 <- random_portfolios(portf.lo, permutations=2000, 
                            rp_method='grid')
   
   # Calculate the portfolio mean return and standard deviation
@@ -369,13 +369,14 @@ if(file.exists("figures/rp_plot.png")){
   x.assets <- StdDev(R)
   y.assets <- colMeans(R)
   ###
+  require(rCharts)
   # create an interactive plot using rCharts and nvd3 scatterChart
-  # tmp1 <- data.frame(name="sample", mean=rp1_mean, sd=rp1_StdDev)
-  # tmp2 <- data.frame(name="simplex", mean=rp2_mean, sd=rp2_StdDev)
-  # tmp3 <- data.frame(name="grid", mean=rp3_mean, sd=rp3_StdDev)
-  # tmp <- rbind(tmp1, tmp2, tmp3)
-  # n1 <- nPlot(mean ~ sd, group="name", data=tmp, type="scatterChart")
-  # n1
+  tmp1 <- data.frame(name="sample", mean=rp1_mean, sd=rp1_StdDev)
+  tmp2 <- data.frame(name="simplex", mean=rp2_mean, sd=rp2_StdDev)
+  tmp3 <- data.frame(name="grid", mean=rp3_mean, sd=rp3_StdDev)
+  tmp <- rbind(tmp1, tmp2, tmp3)
+  rp_viz <- nPlot(mean ~ sd, group="name", data=tmp, type="scatterChart")
+  save(rp_viz, file="figures/rp_viz.rda")
   ###
   x.lower <- min(x.assets) * 0.9
   x.upper <- max(x.assets) * 1.1
