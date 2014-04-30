@@ -11,6 +11,7 @@ mode        : selfcontained
 
 ```{r, echo=FALSE, message=FALSE}
 library(PortfolioAnalytics)
+require(methods)
 ```
 
 
@@ -20,14 +21,14 @@ library(PortfolioAnalytics)
 * Introduce PortfolioAnalytics
 * Demonstrate PortfolioAnalytics with Examples
 
-<!---
-Discuss Portfolio Optimization
-- Some background and theory of portfolio theory
-- challenges
-Introduce PortfolioAnalytics
-- What PortfolioAnalytics does and the problems it solves
-Demonstrate PortfolioAnalytics with Examples
-- Brief overview of the examples I will be giving
+<!--
+* Discuss Portfolio Optimization
+    * Some background and theory of portfolio theory
+    * challenges
+* Introduce PortfolioAnalytics
+    * What PortfolioAnalytics does and the problems it solves
+* Demonstrate PortfolioAnalytics with Examples
+    * Brief overview of the examples I will be giving
 -->
 
 ---
@@ -44,8 +45,8 @@ General Objectives
 
 How do we define risk? What about more complex objectives?
 
-<!---
-Several approaches follow the Markowitz approach using mean return as a measure of gain and standard deviation of returns as a measure of risk.
+<!--
+Several approaches follow the Markowitz approach using mean return as a measure of gain and standard deviation of returns as a measure of risk. This is an academic approach. 
 -->
 
 ---
@@ -62,10 +63,12 @@ Several approaches follow the Markowitz approach using mean return as a measure 
     * Equal Component Contribution to Risk (i.e. Risk Parity)
     * Limits on Component Contribution
 * Maximize a Utility Function
-    * Quadratic, CRRA, CARA, etc.
+    * Quadratic, CRRA, etc.
 
-<!---
-The challenge here is knowing what solver to use and the capabilities/limits of the chosen solver. Talk about pros/cons of closed-form solvers vs. global solvers and what objectives can be solved. 
+<!--
+* Expand on pros/cons of closed-form solvers vs. global solvers and what objectives can be solved.
+* The challenge here is knowing what solver to use and the capabilities/limits of the chosen solver. 
+* Some of these problems can be formulated as a quadratic or linear programming problem. Constructing the constraint matrix and objective function matrix or vector is not trivial. Limited to the quality of LP and QP solvers available for R. 
 -->
 
 ---
@@ -83,14 +86,14 @@ PortfolioAnalytics is an R package designed to provide numerical solutions and v
 
 <!---
 The key points to make here are:
-- Flexibility
-  - The multiple types and modularity of constraints and objectives allows us to add, remove, combine, etc. multiple constraint and objective types very easily.
-  - Define an objective as any valid R function
-  - Define a function to compute the moments (sample, robust, shrinkage, factor model, GARCH model, etc.)
-  - Estimation error is a significant concern with optimization. Having the ability to test different models with different parameters is critical.
-- PortfolioAnalytics comes "pre-built" with several constraint types.
-- Visualization helps to build intuition about the problem and understand the feasible space of portfolios
-- Periodic rebalancing and analyzing out of sample performance will help refine objectives and constraints
+* Flexibility
+    * The multiple types and modularity of constraints and objectives allows us to add, remove, combine, etc. multiple constraint and objective types very easily.
+    * Define an objective as any valid R function
+    * Define a function to compute the moments (sample, robust, shrinkage, factor model, GARCH model, etc.)
+    * Estimation error is a significant concern with optimization. Having the ability to test different models with different parameters is critical.
+* PortfolioAnalytics comes "out of the box" with several constraint types.
+* Visualization helps to build intuition about the problem and understand the feasible space of portfolios
+* Periodic rebalancing and analyzing out of sample performance will help refine objectives and constraints
 -->
 
 ---
@@ -111,7 +114,7 @@ Global (stochastic or continuous solvers)
 * Generalized Simulated Annealing (GenSA)
 
 <!---
-Brief explanation of each solver and what optimization problems (constraints and objectives) are supported
+Brief explanation of each solver and what optimization problems are supported
 -->
 
 ---
@@ -123,14 +126,14 @@ PortfolioAnalytics has three methods to generate random portfolios.
 2. The **simplex** method to generate random portfolios is based on a paper by W. T. Shaw.
 3. The **grid** method to generate random portfolios is based on the `gridSearch` function in the NMOF package.
 
-<!---
-Random portfolios allow one to generate an arbitray number of portfolios based on given constraints. Will cover the edges as well as evenly cover the interior of the feasible space. 
+<!--
+* Random portfolios allow one to generate an arbitray number of portfolios based on given constraints. Will cover the edges as well as evenly cover the interior of the feasible space. 
 
-The sample method to generate random portfolios is based on an idea by Pat Burns. This is the most flexible method, but also the slowest, and can generate portfolios to satisfy leverage, box, group, and position limit constraints.
+* The sample method to generate random portfolios is based on an idea by Pat Burns. This is the most flexible method, but also the slowest, and can generate portfolios to satisfy leverage, box, group, and position limit constraints.
 
-The simplex method to generate random portfolios is based on a paper by W. T. Shaw. The simplex method is useful to generate random portfolios with the full investment constraint, where the sum of the weights is equal to 1, and min box constraints. Values for min_sum and max_sum of the leverage constraint will be ignored, the sum of weights will equal 1. All other constraints such as the box constraint max, group and position limit constraints will be handled by elimination. If the constraints are very restrictive, this may result in very few feasible portfolios remaining. Another key point to note is that the solution may not be along the vertexes depending on the objective. For example, a risk budget objective will likely place the portfolio somewhere on the interior.
+* The simplex method to generate random portfolios is based on a paper by W. T. Shaw. The simplex method is useful to generate random portfolios with the full investment constraint, where the sum of the weights is equal to 1, and min box constraints. Values for min_sum and max_sum of the leverage constraint will be ignored, the sum of weights will equal 1. All other constraints such as the box constraint max, group and position limit constraints will be handled by elimination. If the constraints are very restrictive, this may result in very few feasible portfolios remaining. Another key point to note is that the solution may not be along the vertexes depending on the objective. For example, a risk budget objective will likely place the portfolio somewhere on the interior.
 
-The grid method to generate random portfolios is based on the gridSearch function in NMOF package. The grid search method only satisfies the min and max box constraints. The min_sum and max_sum leverage constraint will likely be violated and the weights in the random portfolios should be normalized. Normalization may cause the box constraints to be violated and will be penalized in constrained_objective.
+* The grid method to generate random portfolios is based on the gridSearch function in NMOF package. The grid search method only satisfies the min and max box constraints. The min_sum and max_sum leverage constraint will likely be violated and the weights in the random portfolios should be normalized. Normalization may cause the box constraints to be violated and will be penalized in constrained_objective.
 -->
 
 ---
@@ -138,7 +141,7 @@ The grid method to generate random portfolios is based on the gridSearch functio
 ## Comparison of Random Portfolio Methods
 ![](figures/rp_plot.png)
 
-<!---
+<!--
 This chart is a prime candidate for an interactive viz
 -->
 
@@ -155,12 +158,23 @@ rp_viz$show('inline')
 ## Random Portfolios: Simplex Method
 ![](figures/fev_plot.png)
 
+<!--
+FEV (Face-Edge-Vertex bias values control how concentrated a portfolio is. This can clearly be seen in the plot. As FEV approaches infinity, the portfolio weight will be concentrated on a single asset. PortfolioAnalytics allows you to specify a vector of fev values for comprehensive coverage of the feasible space. 
+-->
+
 ---
 
 ## Workflow
-![](figures/workflow.png)
 
-<!---
+This slide is redundant (consider deleting)
+
+* Specify Portfolio
+* Add Constraints
+* Add Objectives
+* Run Optimization
+* Analyze Results
+
+<!--
 Describe each function:
 - portfolio.spec
 - add.constraint
@@ -175,6 +189,10 @@ Just give a general description of the functions to analyze results
 ```{r}
 args(portfolio.spec)
 ```
+
+<!--
+The portfolio object is an S3 object that holds portfolio-level data, constraints, and objectives. The portfolio-level data includes asset names and initial weights, labels to categorize assets, and a sequence of weights for random portfolios. The main argument is assets which can be a character vector (most common use), named numeric vector, or scalar value specifying number of assets.
+-->
 
 ---
 
@@ -194,6 +212,10 @@ Supported Constraint Types
 * Return
 * Factor Exposure
 
+<!--
+This adds a constraint object to the portfolio object. Constraints are added to the portfolio object with the add.constraint function. Each constraint added is a separate object and stored in the constraints slot in the portfolio object. In this way, the constraints are modular and one can easily add, remove, or modify the constraints in the portfolio object. Main argument is the type, arguments to the constraint constructor are then passed through the dots (...).
+-->
+
 ---
 
 ## Workflow: Add Objectives
@@ -208,6 +230,10 @@ Supported Objective types
 * Risk Budget
 * Weight Concentration
 
+<!--
+Objectives are added to the portfolio object with the add.objective function. Each objective added is a separate object and stored in the objectives slot in the portfolio object. In this way, the objectives are modular and one can easily add, remove, or modify the objective objects. The name argument must be a valid R function. Several functions are available in the PerformanceAnalytics package, but custom user defined functions can be used as objective functions.
+-->
+
 ---
 
 ## Workflow: Run Optimization
@@ -215,6 +241,12 @@ Supported Objective types
 args(optimize.portfolio)
 args(optimize.portfolio.rebalancing)
 ```
+
+<!--
+* optimize.portfolio: Main arguments for a single period optimization are the returns (R), portfolio, and optimize_method. We take the portfolio object and parse the constraints and objectives according to the optimization method.
+
+* optimize.portfolio.rebalancing: Supports periodic rebalancing (backtesting) to examine out of sample performance. Helps refine constraints and objectives by analyzing out or sample performance. Essentially a wrapper around optimize.portfolio that handles the time interface.
+-->
 
 ---
 
@@ -229,8 +261,8 @@ chart.RiskBudget | print
 chart.RiskReward | summary
 chart.Weights | 
 
-<!---
-I'd like to make this a two column slide if possible. Might have to try slidify.
+<!--
+Brief explanation of each function.
 -->
 
 ---
@@ -263,7 +295,7 @@ $$
 \min_{w} w^{T} \Sigma w
 $$
 
-<!---
+<!--
 Demonstrate a custom moments function to compare a sample covariance matrix estimate and a Ledoit-Wolf shrinkage covariance matrix estimate. An alternative is a robust (MCD, MVE, etc.) estimate, DCC GARCH model, factor model, etc.
 -->
 
@@ -286,7 +318,7 @@ portf.minvar <- add.constraint(portf.minvar, type="box", min=0.01, max=0.45)
 portf.minvar <- add.objective(portf.minvar, type="risk", name="var")
 ```
 
-<!---
+<!--
 Talk a little about adding constraints and objectives
 -->
 
@@ -325,6 +357,9 @@ opt.minVarLW <- optimize.portfolio.rebalancing(equity.data, portf.minvar,
 
 <!---
 Explain each of the rebalancing parameters
+* rebalance_on takes a character vector. Must be a valid value for xts::endpoints
+* training\_period specify the initial training period for returns
+* trailing\_period can specify a moving window (e.g. always using the most recent 60 periods) or growing window with trailing\_periods=NULL.
 -->
 
 ---
@@ -368,8 +403,8 @@ charts.PerformanceSummary(ret.minVar)
 ## Example 2: Market Neutral Portfolio
 Here we consider a portfolio of stocks. Our objective is to maximize portfolio return with a target of 0.0015 and minimize portfolio StdDev with a target of 0.02 subject to dollar neutral, beta, box, and position limit constraints. We will use the same data considered in Example 1.
 
-<!---
-This involves combining several constraints. This is an MIQPQC problem that can't be solved by quadprog so we will use random portfolios.
+<!--
+This involves combining several constraints. This is an MIQPQC problem that can't be solved by quadprog so we will use random portfolios. Good example of a problem with layering multiple constraints and objectives.
 -->
 
 ---
@@ -413,7 +448,7 @@ portf.dn.StdDev <- add.objective(portf.dn.StdDev, type="risk", name="StdDev",
 ```
 
 <!---
-explain the objectives, specifically the target
+explain the objectives, specifically the target argument
 -->
 
 ---
@@ -430,7 +465,7 @@ opt.dn <- optimize.portfolio(equity.data, portf.dn.StdDev,
 ```
 
 <!---
-generate a set of random portfolios and then pass directly to optimize.portfolio. Could just specify optimize_method = "random" and will automatically generate for you.
+generate a set of random portfolios and then pass directly to optimize.portfolio. Could just specify optimize_method = "random" and will automatically generate for you. Generating the random portfolios separately is useful if you plan to evaluate multiple objectives with the same constraints to avoid regenerating random portfolios. Casual benchmarking revealed that generating the random portfolios was often slower than evaluating the objective function on the set of random portfolios. Don't regenerate the portfolios if you don't have to.
 -->
 
 ---
@@ -440,6 +475,10 @@ generate a set of random portfolios and then pass directly to optimize.portfolio
 plot(opt.dn, main="Dollar Neutral Portfolio", risk.col="StdDev", neighbors=10)
 ```
 ![](figures/opt_dn.png)
+
+<!--
+Demonstrates the plot method. Visualize the optimal and feasible portfolios in risk-return space and weights of the optimal portfolios. "Neighbor" portfolios allow you to see where the next closest optimal portfolios are (sorted be the value of the objective function from the optimizer).
+-->
 
 ---
 
@@ -468,6 +507,11 @@ colnames(R) <- c("CA", "EMN", "FIA", "CTAG", "EM", "GM")
 ![](figures/relative_barvar.png)
 ![](figures/directional_barvar.png)
 
+<!--
+* Easy to see the relative volatility
+* Periods of coincident drawdowns
+-->
+
 ---
 
 ## Distribution of Monthly Returns
@@ -478,16 +522,17 @@ colnames(R) <- c("CA", "EMN", "FIA", "CTAG", "EM", "GM")
 ## Minimum Expected Shortfall
 Consider an allocation to hedge funds using the EDHEC-Risk Alternative Index as a proxy. This will be an extended example starting with an objective to minimize modified expected shortfall, then add risk budget percent contribution limit, and finally add equal risk contribution limit.
 
-* Minimize Expected Shortfall
-* Minimize Expected Shortfall with Risk Budget Limit
-* Minimize Expected Shortfall with Equal Risk Contribution
+* Minimize Modified Expected Shortfall
+* Minimize Modified Expected Shortfall with Risk Budget Limit
+* Minimize Modified Expected Shortfall with Equal Risk Contribution
 
 Add risk budget objective to minimize concentration of percentage component contribution to risk. Concentration is defined as the Herfindahl Hirschman Index (HHI).
 
 $$ \sum_{i=1}^n x_i^2 $$
 
-<!---
-comments
+<!--
+* ES is coherent and is a convex function of the weights
+* We are actually using modified ES to take into account the higher moments because the return distribution displays skewness and kurtosis. Modified ES uses the Cornish-Fisher estimate of ES.
 -->
 
 ---
@@ -513,8 +558,8 @@ portf.init <- add.objective(portf.init, type="return",
                             name="mean", multiplier=0)
 ```
 
-<!---
-basic comments about setting up an initial portfolio
+<!--
+Explain the initial portfolio setup
 -->
 
 ---
@@ -538,7 +583,8 @@ portf.minES.EqRB <- add.objective(portf.minES, type="risk_budget",
 portf.minES.EqRB <- add.constraint(portf.minES.EqRB, type="box", 
                                    min=0.05, max=1, indexnum=2)
 ```
-<!---
+
+<!--
 Key points here are that we are creating 3 new portfolios by reusing the initial portfolio and we are relaxing the box constraints because we are no longer concerned with controlling weight concentration. We have limits on risk contribution.
 -->
 
@@ -557,13 +603,17 @@ opt.minES <- optimize.portfolio(R, portf, optimize_method="DEoptim",
 ```
 
 <!---
-explain how portf is a list of portfolios and passed to optimize.portfolio
+Explain how portf is a list of portfolios and passed to optimize.portfolio
 -->
 
 ---
 
 ## Plot in Risk-Return Space
 ![](figures/opt_minES.png)
+
+<!--
+Note here how DEoptim concentrates its search space on the left hand side, towards the objective....  it spends some time in the upper right, but rapidly moves to concentrating closer to the min-risk boundary
+-->
 
 ---
 
@@ -620,6 +670,16 @@ bt.opt.minES <- optimize.portfolio.rebalancing(R, portf,
 
 ---
 
+## Min ES Equal Component Contribution Risk Contributions and Weights (interactive!)
+```{r, results = 'asis', comment = NA, message = F, echo = F}
+load("figures/bt_w3.rda")
+load("figures/bt_rb3.rda")
+bt_w3$show('inline')
+bt_rb3$show('inline')
+```
+
+---
+
 ## Compute Returns
 ```{r, eval=FALSE, tidy=FALSE}
 ret.bt.opt <- do.call(cbind, lapply(bt.opt.minES, 
@@ -647,7 +707,7 @@ EU_{\lambda}(w) = - \frac{\lambda}{2} m_{(2)}(w) +
 $$
 
 <!---
-Demonstrate a custom moment function and a custom objective function.
+This example will demonstrate a custom moment function and a custom objective function.
 -->
 
 ---
@@ -693,15 +753,14 @@ portf.crra <- add.objective(portf.crra, type="return",
 ```
 
 <!---
-Focus on how CRRA is added as an objective
+Focus on how CRRA is added as an objective and the lambda argument is passed
 -->
 
 ---
 
 ## "Dummy" Objectives
 ```{r, eval=FALSE, tidy=FALSE}
-# I just want these for plotting
-# Set multiplier=0 so that it is calculated, but does not affect the optimization
+# Dummy objectives for plotting and/or further analysis
 portf.crra <- add.objective(portf.crra, type="return", name="mean", multiplier=0)
 portf.crra <- add.objective(portf.crra, type="risk", name="ES", multiplier=0)
 portf.crra <- add.objective(portf.crra, type="risk", name="StdDev", multiplier=0)
@@ -728,7 +787,7 @@ head(extractStats(opt.crra),4)
 ```
 
 
-<!---
+<!--
 remember to specify a momentFUN to match the arguments in CRRA
 -->
 
@@ -763,6 +822,14 @@ colnames(ret.crra) <- "CRRA"
 <!---
 Run optimization and extract the portfolio rebalancing returns from the summary method
 -->
+
+---
+
+## Chart Performance
+```{r, eval=FALSE, tidy=FALSE, fig.align='center'}
+chart.Weights(bopt.crra, main="CRRA Weights", col=bluemono)
+```
+![](figures/weights_crra.png)
 
 ---
 

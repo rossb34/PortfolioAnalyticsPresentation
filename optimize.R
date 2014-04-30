@@ -340,7 +340,7 @@ if(file.exists(paste(results.dir, "bt.opt.crra.rda", sep="/"))){
 
 ##### RP Demo #####
 cat("Random portfolio method comparison\n")
-if(file.exists("figures/rp_plot.png")){
+if(file.exists("figures/rp_plot.png") & file.exists("figures/rp_viz.rda")){
   cat("file already exists\n")
 } else {
   portf.lo <- portfolio.spec(colnames(R))
@@ -376,6 +376,26 @@ if(file.exists("figures/rp_plot.png")){
   tmp3 <- data.frame(name="grid", mean=rp3_mean, sd=rp3_StdDev)
   tmp <- rbind(tmp1, tmp2, tmp3)
   rp_viz <- nPlot(mean ~ sd, group="name", data=tmp, type="scatterChart")
+  rp_viz$xAxis(
+    axisLabel = 'Risk (std. dev.)'
+    ,tickFormat = "#!d3.format('0.4f')!#"
+  )
+  rp_viz$yAxis(
+    axisLabel = 'Return'
+    ,tickFormat = "#!d3.format('0.4f')!#" 
+  )
+  #set left margin so y axis label will show up
+  rp_viz$chart( margin = list(left = 100) )
+  rp_viz$chart(
+    tooltipContent = "#!
+    function(a,b,c,d) {
+    //d has all the info  you need
+    return( '<h3>' + d.point.series + '</h3>Return: ' + d.point.y  +  '<br>Risk: ' + d.point.x)
+    }
+    !#")
+  ####if you do not want fisheye/magnify
+  ####let me know, and will show how to remove
+  ####this will solve the tooltip problem
   save(rp_viz, file="figures/rp_viz.rda")
   ###
   x.lower <- min(x.assets) * 0.9
@@ -383,7 +403,7 @@ if(file.exists("figures/rp_plot.png")){
   y.lower <- min(y.assets) * 0.9
   y.upper <- max(y.assets) * 1.1
   
-  png("figures/rp_plot.png")
+  png("figures/rp_plot.png", height = 500, width = 1000)
   # plot feasible portfolios 
   plot(x=rp1_StdDev, y=rp1_mean, col="gray", main="Random Portfolio Methods",
        ylab="mean", xlab="StdDev", xlim=c(x.lower, x.upper), 
@@ -402,7 +422,7 @@ cat("Random portfolio simplex method fev biasing\n")
 if(file.exists("figures/fev_plot.png")){
   cat("file already exists\n")
 } else {
-  png("figures/fev_plot.png")
+  png("figures/fev_plot.png", height = 500, width = 1000)
   fev <- 0:5
   x.assets <- StdDev(R)
   y.assets <- colMeans(R)

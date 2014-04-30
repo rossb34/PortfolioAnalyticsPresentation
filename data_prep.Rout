@@ -1,0 +1,48 @@
+
+R version 3.0.2 (2013-09-25) -- "Frisbee Sailing"
+Copyright (C) 2013 The R Foundation for Statistical Computing
+Platform: x86_64-apple-darwin10.8.0 (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> 
+> ##### Equity Data for Example 1 and Example 2 #####
+> load("data/crsp_weekly.rda")
+> 
+> equity.data <- cbind(largecap_weekly[,1:15], 
++                      midcap_weekly[,1:15], 
++                      smallcap_weekly[,1:5])
+> market <- largecap_weekly[,21]
+> Rf <- largecap_weekly[,22]
+> 
+> ##### edhec Data for Example 3 and Example 4 #####
+> # Load the updated edhec dataset
+> load("data/edhec.rda")
+> 
+> # Prep data for Examples 3 and 4
+> R <- edhec[,c("Convertible.Arbitrage", "Equity.Market.Neutral", 
++               "Fixed.Income.Arbitrage", 
++               "CTA.Global", "Emerging.Markets", "Global.Macro")]
+> # Abreviate column names for convenience and plotting
+> colnames(R) <- c("CA", "EMN", "FIA", "CTAG", "EM", "GM")
+> 
+> 
+> # clean up and remove the data we don't need
+> rm(largecap_weekly, midcap_weekly, smallcap_weekly, microcap_weekly)
+> rm(edhec)
+> 
+> proc.time()
+   user  system elapsed 
+  0.236   0.025   0.251 

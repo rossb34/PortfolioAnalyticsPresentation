@@ -9,10 +9,10 @@ RFILES := data_prep.R data_analysis.R optimize.R optimization_analysis.R
 OUT_FILES:= $(RFILES:.R=.Rout)
 
 
-all: $(OUT_FILES) slidy_presentation.html presentation.Rmd
+all: $(OUT_FILES) index.html presentation.Rmd
 
 index.html: presentation.Rmd
-	Rscript -e "library(slidify); slidify('presentation.Rmd')"
+	Rscript -e "library(methods); library(slidify); slidify('presentation.Rmd')"
 	mv presentation.html index.html
 
 # Generate slidy presentation from markdown file

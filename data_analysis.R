@@ -11,7 +11,7 @@ sd.order <- order(StdDev(equity.data))
 # boxplot to compare return distributions
 # mar(bottom, left, top, right)
 # default: par(mar=c(5, 4, 4, 2) + 0.1)
-png(paste(figures.dir, "equity_box.png", sep="/"))
+png(paste(figures.dir, "equity_box.png", sep="/"), height = 500, width = 1000)
 boxplot(coredata(equity.data[,sd.order]),
         cex.axis=0.8, las=3, ylab="Returns", pch=18,
         col=colors[sd.order],
@@ -37,7 +37,7 @@ dev.off()
 colors <- c(rep("lightblue", 3), rep("red", 3))
 ES.order <- order(ES(R, p=p, invert=FALSE))
 
-png(paste(figures.dir, "edhec_box.png", sep="/"))
+png(paste(figures.dir, "edhec_box.png", sep="/"), height = 500, width = 1000)
 boxplot(coredata(R[,ES.order]),
         cex.axis=0.8, las=3, ylab="Returns", pch=18,
         col=colors[ES.order],
