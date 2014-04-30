@@ -60,7 +60,8 @@ clean:
 	rm -f *.Rout
 	rm -f figures/*.png
 	rm -f optimization_results/*.rda
-	rm -f Presentation.md
+	rm -f presentation.md
 	rm -f *.html
 	rm -rf libraries/
+	rm -rf .cache/
 	

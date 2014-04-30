@@ -8,7 +8,7 @@
 .Rdata
 
 # R out files generated with R CMD BATCH
-.Rout
+*.Rout
 
 # OS specific files
 .DS_store
