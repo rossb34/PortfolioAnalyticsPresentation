@@ -825,7 +825,7 @@ Run optimization and extract the portfolio rebalancing returns from the summary 
 
 ---
 
-## Chart Performance
+## Chart Weights Through Time
 ```{r, eval=FALSE, tidy=FALSE, fig.align='center'}
 chart.Weights(bopt.crra, main="CRRA Weights", col=bluemono)
 ```

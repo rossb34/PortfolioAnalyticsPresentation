@@ -198,7 +198,7 @@ png(paste(figures.dir, "crra_RR_StdDev.png", sep="/"))
 chart.RiskReward(opt.crra, risk.col="StdDev")
 dev.off()
 
-png(paste(figures.dir, "weights_crra.png", sep="/"))
+png(paste(figures.dir, "weights_crra.png", sep="/"), height = fig.height, width = fig.width)
 chart.Weights(bt.opt.crra, main="CRRA Weights", col=bluemono)
 dev.off()
 
