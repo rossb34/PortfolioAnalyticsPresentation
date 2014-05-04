@@ -13,3 +13,7 @@
 # OS specific files
 .DS_store
 
+.cache/*
+
+presentation.md
+
