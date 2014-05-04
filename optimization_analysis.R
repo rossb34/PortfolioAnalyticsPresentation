@@ -152,9 +152,11 @@ chart.Weights(bt.opt.minES[[3]], main="Min ES EqRB Weights", col=bluemono)
 dev.off()
 
 bt_w3 <- nvd3WeightsPlot(bt.opt.minES[[3]], "multiBarChart")
+bt_w3$chart(color = PerformanceAnalytics::bluemono)
 save(bt_w3, file=paste(figures.dir, "bt_w3.rda", sep="/"))
 
 bt_rb3 <- nvd3RiskPlot(bt.opt.minES[[3]], "multiBarChart")
+bt_rb3$chart(color = PerformanceAnalytics::bluemono)
 save(bt_rb3, file=paste(figures.dir, "bt_rb3.rda", sep="/"))
 
 # Extract the returns from each element and chart the performance summary

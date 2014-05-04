@@ -23,8 +23,7 @@ require(methods)
 
 <!--
 * Discuss Portfolio Optimization
-    * Some background and theory of portfolio theory
-    * challenges
+    * Background and challenges of portfolio theory
 * Introduce PortfolioAnalytics
     * What PortfolioAnalytics does and the problems it solves
 * Demonstrate PortfolioAnalytics with Examples
@@ -94,6 +93,7 @@ The key points to make here are:
 * PortfolioAnalytics comes "out of the box" with several constraint types.
 * Visualization helps to build intuition about the problem and understand the feasible space of portfolios
 * Periodic rebalancing and analyzing out of sample performance will help refine objectives and constraints
+* Framework for evaluating portfolios with different sets of objectives and portfolios through time
 -->
 
 ---
@@ -127,9 +127,9 @@ PortfolioAnalytics has three methods to generate random portfolios.
 3. The **grid** method to generate random portfolios is based on the `gridSearch` function in the NMOF package.
 
 <!--
-* Random portfolios allow one to generate an arbitray number of portfolios based on given constraints. Will cover the edges as well as evenly cover the interior of the feasible space. 
+* Random portfolios allow one to generate an arbitray number of portfolios based on given constraints. Will cover the edges as well as evenly cover the interior of the feasible space. Allows for massively parallel execution.
 
-* The sample method to generate random portfolios is based on an idea by Pat Burns. This is the most flexible method, but also the slowest, and can generate portfolios to satisfy leverage, box, group, and position limit constraints.
+* The sample method to generate random portfolios is based on an idea by Patrick Burns. This is the most flexible method, but also the slowest, and can generate portfolios to satisfy leverage, box, group, and position limit constraints.
 
 * The simplex method to generate random portfolios is based on a paper by W. T. Shaw. The simplex method is useful to generate random portfolios with the full investment constraint, where the sum of the weights is equal to 1, and min box constraints. Values for min_sum and max_sum of the leverage constraint will be ignored, the sum of weights will equal 1. All other constraints such as the box constraint max, group and position limit constraints will be handled by elimination. If the constraints are very restrictive, this may result in very few feasible portfolios remaining. Another key point to note is that the solution may not be along the vertexes depending on the objective. For example, a risk budget objective will likely place the portfolio somewhere on the interior.
 
@@ -142,7 +142,8 @@ PortfolioAnalytics has three methods to generate random portfolios.
 ![](figures/rp_plot.png)
 
 <!--
-This chart is a prime candidate for an interactive viz
+* This chart is a prime candidate for an interactive viz
+* The feasible space is computed using the EDHEC data for a long only portfolio with a search size of 2000.
 -->
 
 ---
@@ -153,6 +154,10 @@ load("figures/rp_viz.rda")
 rp_viz$show('inline')
 ```
 
+<!--
+The feasible space is computed using the EDHEC data for a long only portfolio with a search size of 2000.
+-->
+
 ---
 
 ## Random Portfolios: Simplex Method
@@ -162,6 +167,7 @@ rp_viz$show('inline')
 FEV (Face-Edge-Vertex bias values control how concentrated a portfolio is. This can clearly be seen in the plot. As FEV approaches infinity, the portfolio weight will be concentrated on a single asset. PortfolioAnalytics allows you to specify a vector of fev values for comprehensive coverage of the feasible space. 
 -->
 
+<!--
 ---
 
 ## Workflow
@@ -181,6 +187,8 @@ Describe each function:
 - add.objective
 - optimize.portfolio and optimize.portfolio.rebalancing
 Just give a general description of the functions to analyze results
+-->
+
 -->
 
 ---
@@ -206,11 +214,9 @@ Supported Constraint Types
 * Sum of Weights
 * Box
 * Group
-* Turnover
-* Diversification
-* Position Limit
-* Return
 * Factor Exposure
+* Position Limit
+* and many more
 
 <!--
 This adds a constraint object to the portfolio object. Constraints are added to the portfolio object with the add.constraint function. Each constraint added is a separate object and stored in the constraints slot in the portfolio object. In this way, the constraints are modular and one can easily add, remove, or modify the constraints in the portfolio object. Main argument is the type, arguments to the constraint constructor are then passed through the dots (...).
@@ -243,6 +249,8 @@ args(optimize.portfolio.rebalancing)
 ```
 
 <!--
+* Notice the similarity between these two functions. You only have to specify a few additional arguments for the backtesting.
+
 * optimize.portfolio: Main arguments for a single period optimization are the returns (R), portfolio, and optimize_method. We take the portfolio object and parse the constraints and objectives according to the optimization method.
 
 * optimize.portfolio.rebalancing: Supports periodic rebalancing (backtesting) to examine out of sample performance. Helps refine constraints and objectives by analyzing out or sample performance. Essentially a wrapper around optimize.portfolio that handles the time interface.
@@ -281,10 +289,18 @@ equity.data <- cbind(largecap_weekly[,1:15],
                      smallcap_weekly[,1:5])
 ```
 
+<!--
+slide comments
+-->
+
 ---
 
 ## Distribution of Monthly Returns
 ![](figures/equity_box.png)
+
+<!--
+slide comments
+-->
 
 ---
 
@@ -319,7 +335,7 @@ portf.minvar <- add.objective(portf.minvar, type="risk", name="var")
 ```
 
 <!--
-Talk a little about adding constraints and objectives
+This is a very basic portfolio with full investment and box constraints and risk objective.
 -->
 
 ---
@@ -334,6 +350,10 @@ lw.sigma <- function(R, ...){
   return(out)
 }
 ```
+
+<!--
+slide comments
+-->
 
 ---
 
@@ -372,6 +392,10 @@ chart.Weights(opt.minVarLW, main="minVarLW Weights", legend.loc=NULL)
 ![](figures/weights_minVarSample.png)
 ![](figures/weights_minVarLW.png)
 
+<!--
+slide comments
+-->
+
 ---
 
 ## Chart Weights Through Time (interactive!)
@@ -379,6 +403,10 @@ chart.Weights(opt.minVarLW, main="minVarLW Weights", legend.loc=NULL)
 load("figures/w1.rda")
 w1$show('inline')
 ```
+
+<!--
+slide comments
+-->
 
 ---
 
@@ -390,6 +418,10 @@ ret.minVar <- cbind(ret.minVarSample, ret.minVarRobust)
 colnames(ret.minVar) <- c("Sample", "LW")
 ```
 
+<!--
+slide comments
+-->
+
 ---
 
 ## Chart Performance
@@ -397,6 +429,10 @@ colnames(ret.minVar) <- c("Sample", "LW")
 charts.PerformanceSummary(ret.minVar)
 ```
 ![](figures/ret_minVar.png)
+
+<!--
+slide comments
+-->
 
 ---
 
@@ -501,6 +537,12 @@ R <- edhec[,c("Convertible.Arbitrage", "Equity.Market.Neutral",
 colnames(R) <- c("CA", "EMN", "FIA", "CTAG", "EM", "GM")
 ```
 
+<!--
+* Chosen to represent investing in hedge funds with different styles
+* Not necessarily investable
+* Style definitions
+-->
+
 ---
 
 ## Monthly Returns
@@ -516,6 +558,10 @@ colnames(R) <- c("CA", "EMN", "FIA", "CTAG", "EM", "GM")
 
 ## Distribution of Monthly Returns
 ![](figures/edhec_box.png)
+
+<!--
+slide comments
+-->
 
 ---
 
@@ -585,7 +631,7 @@ portf.minES.EqRB <- add.constraint(portf.minES.EqRB, type="box",
 ```
 
 <!--
-Key points here are that we are creating 3 new portfolios by reusing the initial portfolio and we are relaxing the box constraints because we are no longer concerned with controlling weight concentration. We have limits on risk contribution.
+Key points here are that we are creating 3 new portfolios by reusing the initial portfolio and we are relaxing the box constraints because we are no longer concerned with controlling weight concentration... we have limits on risk contribution.
 -->
 
 ---
@@ -595,7 +641,8 @@ Key points here are that we are creating 3 new portfolios by reusing the initial
 # Combine the 3 portfolios
 portf <- combine.portfolios(list(minES=portf.minES, 
                                  minES.RB=portf.minES.RB, 
-                                 minES.EqRB=portf.minES.EqRB))
+                                 minES.EqRB=portf.minES.EqRB)
+                            )
 
 # Run the optimization
 opt.minES <- optimize.portfolio(R, portf, optimize_method="DEoptim", 
@@ -628,6 +675,10 @@ chart.RiskBudget(opt.minES[[3]], main="Equal ES Component Contribution",
 ![](figures/rb_minES.png)
 ![](figures/eqrb_minES.png)
 
+<!--
+slide comments
+-->
+
 ---
 
 ## Set Rebalancing Parameters and Run Backtest
@@ -650,11 +701,19 @@ bt.opt.minES <- optimize.portfolio.rebalancing(R, portf,
                                                traceDE=0)
 ```
 
+<!--
+slide comments
+-->
+
 ---
 
 ## Min ES Risk Contributions and Weights Through Time
 ![](figures/risk_minES.png)
 ![](figures/weights_minES.png)
+
+<!--
+slide comments
+-->
 
 ---
 
@@ -662,21 +721,61 @@ bt.opt.minES <- optimize.portfolio.rebalancing(R, portf,
 ![](figures/risk_minESRB.png)
 ![](figures/weights_minESRB.png)
 
+<!--
+slide comments
+-->
+
 ---
 
 ## Min ES Equal Component Contribution Risk Contributions and Weights Through Time
 ![](figures/risk_minESEqRB.png)
 ![](figures/weights_minESEqRB.png)
 
----
+<!--
+slide comments
+-->
+
+--- &twocol
 
 ## Min ES Equal Component Contribution Risk Contributions and Weights (interactive!)
 ```{r, results = 'asis', comment = NA, message = F, echo = F}
 load("figures/bt_w3.rda")
 load("figures/bt_rb3.rda")
-bt_w3$show('inline')
+```
+
+*** =left
+
+#### Percent Contribution to Risk
+
+```{r, results = 'asis', comment = NA, message = F, echo = F}
+bt_rb3$set(
+  height = 400
+  ,width = 450
+)
+bt_rb3$chart( stacked=T )
+bt_rb3$setLib("nvd3")
+bt_rb3$setTemplate(afterScript="<script></script>")
 bt_rb3$show('inline')
 ```
+
+*** =right
+
+#### Weights
+
+```{r, results = 'asis', comment = NA, message = F, echo = F}
+bt_w3$set(
+  height = 400
+  ,width = 450
+)
+bt_w3$chart( stacked=T )
+bt_w3$setLib("nvd3")
+bt_w3$setTemplate(afterScript="<script></script>")
+bt_w3$show('inline')
+```
+
+<!--
+slide comments
+-->
 
 ---
 
@@ -687,6 +786,10 @@ ret.bt.opt <- do.call(cbind, lapply(bt.opt.minES,
 colnames(ret.bt.opt) <- c("min ES", "min ES RB", "min ES Eq RB")
 ```
 
+<!--
+Recall that bt.opt.minES is a list where each element is an optimize.portfolio.rebalancing object. Basically, we want to loop through that list and extract the portfolio returns that is computed by the summary method.
+-->
+
 ---
 
 ## Chart Performance
@@ -694,6 +797,10 @@ colnames(ret.bt.opt) <- c("min ES", "min ES RB", "min ES Eq RB")
 charts.PerformanceSummary(ret.bt.opt)
 ```
 ![](figures/ret_minES.png)
+
+<!--
+slide comments
+-->
 
 ---
 
@@ -707,7 +814,10 @@ EU_{\lambda}(w) = - \frac{\lambda}{2} m_{(2)}(w) +
 $$
 
 <!---
-This example will demonstrate a custom moment function and a custom objective function.
+* This example will demonstrate a custom moment function and a custom objective function.
+* This is an interesting objective function
+* An increase in the 2nd and 4th moment will decrease the objective function
+* An increase in the lambda value places a bigger penalty on the higher moments
 -->
 
 ---
@@ -729,6 +839,25 @@ CRRA <- function(R, weights, lambda, sigma, m3, m4){
 
 <!---
 The function arguments should have 'R' as the name of the returns and 'weights' as the name of the weights. 'R' and 'weights' are automatically matched, any other function arguments can be passed in through arguments in add.objective.
+-->
+
+---
+
+## Define a custom moment function
+The default function for `momentFUN` is `set.portfolio.moments`. We need to write our own function to estimate the moments for our objective function.
+```{r, eval=FALSE}
+crra.moments <- function(R, ...){
+  out <- list()
+  out$mu <- colMeans(R)
+  out$sigma <- cov(R)
+  out$m3 <- PerformanceAnalytics:::M3.MM(R)
+  out$m4 <- PerformanceAnalytics:::M4.MM(R)
+  out
+}
+```
+
+<!--
+The set.portfolio.moments looks for the most common objective function names e.g. mean, StdDev, VaR, and ES. The custom moment function should return a named list of the moments needed for the objective function.
 -->
 
 ---
@@ -767,7 +896,8 @@ portf.crra <- add.objective(portf.crra, type="risk", name="StdDev", multiplier=0
 ```
 
 <!---
-Explain what multiplier = 0 is doing
+* Explain what multiplier = 0 is doing
+* The value is computed, but it does not impact the optimization
 -->
 
 ---
@@ -782,7 +912,7 @@ opt.crra <- optimize.portfolio(R, portf.crra, optimize_method="DEoptim",
 ```{r, echo=FALSE}
 load("optimization_results/opt.crra.rda")
 ```
-```{r, tidy=FALSE, cache=TRUE}
+```{r, tidy=FALSE}
 head(extractStats(opt.crra),4)
 ```
 
@@ -802,6 +932,10 @@ chart.RiskReward(opt.crra, risk.col="StdDev")
 ![](figures/crra_RR_ES.png)
 ![](figures/crra_RR_StdDev.png)
 
+<!--
+It is very interesting to look at the feasible space in terms of different measures for risk. It appears that the optimal CRRA portfolio is close to the minimum StdDev portfolio, but nowhere near the minimum ES portfolio.
+-->
+
 ---
 
 ## Run Backtest and Compute Returns
@@ -820,16 +954,20 @@ colnames(ret.crra) <- "CRRA"
 ```
 
 <!---
-Run optimization and extract the portfolio rebalancing returns from the summary method
+Run optimization and extract the portfolio rebalancing returns from the summary method. 
 -->
 
 ---
 
 ## Chart Weights Through Time
 ```{r, eval=FALSE, tidy=FALSE, fig.align='center'}
-chart.Weights(bopt.crra, main="CRRA Weights", col=bluemono)
+chart.Weights(bt.opt.crra, main="CRRA Weights", col=bluemono)
 ```
 ![](figures/weights_crra.png)
+
+<!--
+slide comments
+-->
 
 ---
 
@@ -840,18 +978,26 @@ charts.PerformanceSummary(cbind(ret.bt.opt, ret.crra),
 ```
 ![](figures/ret_crra.png)
 
+<!--
+slide comments
+-->
+
 ---
 
 ## Conclusion
-TODO
 
-* Overview of what was covered
-* Additional information and plans for PortfolioAnalytics
+* Introduced the goals and summary of PortfolioAnalytics
+* Demonstrated the flexibility through examples
+* Exciting plans for GSOC 2014
+    * Support for regime switching
+    * Support for supervised learning
+    * many more
 
-## Acknowledgements
-Many thanks to
+#### Acknowledgements
+Many thanks to...
 
 * Google: funding for Google Summer of Code (GSoC)
+* UW CF & RM Program: continued work on PortfolioAnalytics
 * GSoC Mentors: Brian Peterson, Peter Carl, Doug Martin, and Guy Yollin
 * R/Finance Committee
 
@@ -871,8 +1017,8 @@ Many thanks to
 * [pso](http://cran.r-project.org/web/packages/pso/index.html)
 * [GenSA](http://cran.r-project.org/web/packages/GenSA/index.html)
 * [PerformanceAnalytics](http://cran.r-project.org/web/packages/PerformanceAnalytics/index.html)
-* Pat Burns Random Portfolios
-* W.T. Shaw Random Portfolios
+* [Patrick Burns Random Portfolios](http://www.burns-stat.com/pages/Finance/randport_practice_theory_annotated.pdf)
+* [W.T. Shaw Random Portfolios](http://papers.ssrn.com/sol3/papers.cfm?abstract_id=1856476)
 * Martinelli paper
 * Boudt paper
 * [PortfolioAnalytics on R-Forge](https://r-forge.r-project.org/projects/returnanalytics/)
