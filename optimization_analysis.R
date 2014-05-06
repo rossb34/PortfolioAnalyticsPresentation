@@ -16,20 +16,27 @@ fig.width <- 950
 load(paste(results.dir, "opt.minVarSample.rda", sep="/"))
 load(paste(results.dir, "opt.minVarLW.rda", sep="/"))
 
+n <- length(opt.minVarSample$portfolio$assets)
+# tmp_colors <- sample(colorRampPalette(c("dodgerblue", "gray", "orange"))(n), n, FALSE)
+tmp_colors <- colorRampPalette(c("lightgreen", "dodgerblue", "#fff7bc"))(n)
 # Chart the weights through time
 png(paste(figures.dir, "weights_minVarSample.png", sep="/"))
-chart.Weights(opt.minVarSample, main="minVarSample Weights", legend.loc=NULL, col=bluemono)
+chart.Weights(opt.minVarSample, main="minVarSample Weights", legend.loc=NULL, 
+              col=tmp_colors)
 dev.off()
 
 w1 <- nvd3WeightsPlot(opt.minVarSample)
+w1$chart(color = tmp_colors)
 save(w1, file=paste(figures.dir, "w1.rda", sep="/"))
 
 
 png(paste(figures.dir, "weights_minVarLW.png", sep="/"))
-chart.Weights(opt.minVarLW, main="minVarLW Weights", legend.loc=NULL, col=bluemono)
+chart.Weights(opt.minVarLW, main="minVarLW Weights", legend.loc=NULL, 
+              col=tmp_colors)
 dev.off()
 
 w2 <- nvd3WeightsPlot(opt.minVarLW)
+w2$chart(color = tmp_colors)
 save(w2, file=paste(figures.dir, "w2.rda", sep="/"))
 
 # Compute the returns and chart the performance summary

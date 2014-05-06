@@ -198,6 +198,8 @@ Just give a general description of the functions to analyze results
 args(portfolio.spec)
 ```
 
+Initializes the portfolio object that holds portfolio level data, constraints, and objectives
+
 <!--
 The portfolio object is an S3 object that holds portfolio-level data, constraints, and objectives. The portfolio-level data includes asset names and initial weights, labels to categorize assets, and a sequence of weights for random portfolios. The main argument is assets which can be a character vector (most common use), named numeric vector, or scalar value specifying number of assets.
 -->
@@ -396,6 +398,7 @@ chart.Weights(opt.minVarLW, main="minVarLW Weights", legend.loc=NULL)
 slide comments
 -->
 
+<!--
 ---
 
 ## Chart Weights Through Time (interactive!)
@@ -407,8 +410,10 @@ w1$show('inline')
 <!--
 slide comments
 -->
+-->
 
 ---
+
 
 ## Compute Returns
 ```{r, eval=FALSE}
@@ -571,10 +576,11 @@ Consider an allocation to hedge funds using the EDHEC-Risk Alternative Index as 
 * Minimize Modified Expected Shortfall
 * Minimize Modified Expected Shortfall with Risk Budget Limit
 * Minimize Modified Expected Shortfall with Equal Risk Contribution
-
+<!--
 Add risk budget objective to minimize concentration of percentage component contribution to risk. Concentration is defined as the Herfindahl Hirschman Index (HHI).
 
 $$ \sum_{i=1}^n x_i^2 $$
+-->
 
 <!--
 * ES is coherent and is a convex function of the weights
@@ -805,7 +811,7 @@ slide comments
 ---
 
 ## Example 4: Maximize CRRA
-Consider an allocation to hedge funds using the EDHEC-Risk Alternative Index as a proxy. Our objective to maximize the fourth order expansion of the Constant Relative Risk Aversion (CRRA) expected utility function as in the Boudt paper and Martinelli paper. We use the same data as Example 3.
+Consider an allocation to hedge funds using the EDHEC-Risk Alternative Index as a proxy. Our objective to maximize the fourth order expansion of the Constant Relative Risk Aversion (CRRA) expected utility function as in the Boudt paper and Martellini paper. We use the same data as Example 3.
 
 $$
 EU_{\lambda}(w) = - \frac{\lambda}{2} m_{(2)}(w) + 
@@ -1019,7 +1025,7 @@ Many thanks to...
 * [PerformanceAnalytics](http://cran.r-project.org/web/packages/PerformanceAnalytics/index.html)
 * [Patrick Burns Random Portfolios](http://www.burns-stat.com/pages/Finance/randport_practice_theory_annotated.pdf)
 * [W.T. Shaw Random Portfolios](http://papers.ssrn.com/sol3/papers.cfm?abstract_id=1856476)
-* Martinelli paper
+* Martellini paper
 * Boudt paper
 * [PortfolioAnalytics on R-Forge](https://r-forge.r-project.org/projects/returnanalytics/)
 * [Shiny App](http://spark.rstudio.com/rossbennett3/PortfolioOptimization/)

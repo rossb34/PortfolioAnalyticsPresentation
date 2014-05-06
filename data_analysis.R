@@ -5,7 +5,7 @@ source("data_prep.R")
 figures.dir <- "figures"
 
 ##### Equity Data for Example 1 and Example 2 #####
-colors <- c(rep("blue", 15), rep("green", 15), rep("red", 5))
+colors <- c(rep(bluemono[1], 15), rep(bluemono[4], 15), rep(bluemono[8], 5))
 sd.order <- order(StdDev(equity.data))
 
 # boxplot to compare return distributions
@@ -17,7 +17,7 @@ boxplot(coredata(equity.data[,sd.order]),
         col=colors[sd.order],
         main="Return Distribution\n(sorted by StdDev)")
 legend("topleft", legend=c("Large Cap", "Mid Cap", "Small Cap"), 
-       fill=c("blue", "green", "red"), bty="n", cex=0.8)
+       fill=c(bluemono[1], bluemono[4], bluemono[8]), bty="n", cex=0.8)
 dev.off()
 
 ##### edhec Data for Example 3 and Example 4 #####
@@ -25,16 +25,16 @@ p <- 0.95
 
 png(paste(figures.dir, "relative_barvar.png", sep="/"))
 charts.BarVaR(R[,1:3], width=60, methods=c("ModifiedES", "ModifiedVaR"), 
-              main="Relative Value")
+              main="Relative Value", colorset=rep(bluemono[1], 3))
 dev.off()
 
 png(paste(figures.dir, "directional_barvar.png", sep="/"))
 charts.BarVaR(R[,4:6], width=60, methods=c("ModifiedES", "ModifiedVaR"), 
-              main="Directional")
+              main="Directional", colorset=rep(bluemono[4], 3))
 dev.off()
 
 
-colors <- c(rep("lightblue", 3), rep("red", 3))
+colors <- c(rep(bluemono[1], 3), rep(bluemono[4], 3))
 ES.order <- order(ES(R, p=p, invert=FALSE))
 
 png(paste(figures.dir, "edhec_box.png", sep="/"), height = 500, width = 1000)
@@ -43,7 +43,7 @@ boxplot(coredata(R[,ES.order]),
         col=colors[ES.order],
         main="Return Distribution\n(sorted by Modified ES (95%))")
 legend("topleft", legend=c("Relative Value", "Directional"), 
-       fill=c("lightblue", "red"), bty="n", cex=0.8)
+       fill=c(bluemono[1], bluemono[4]), bty="n", cex=0.8)
 dev.off()
 
 # script for data analysis
