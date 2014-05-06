@@ -37544,30 +37544,6 @@ The feasible space is computed using the EDHEC data for a long only portfolio wi
 FEV (Face-Edge-Vertex bias values control how concentrated a portfolio is. This can clearly be seen in the plot. As FEV approaches infinity, the portfolio weight will be concentrated on a single asset. PortfolioAnalytics allows you to specify a vector of fev values for comprehensive coverage of the feasible space. 
 -->
 
-<!--
----
-
-## Workflow
-
-This slide is redundant (consider deleting)
-
-* Specify Portfolio
-* Add Constraints
-* Add Objectives
-* Run Optimization
-* Analyze Results
-
-<!--
-Describe each function:
-- portfolio.spec
-- add.constraint
-- add.objective
-- optimize.portfolio and optimize.portfolio.rebalancing
-Just give a general description of the functions to analyze results
--->
-
-<p>--&gt;</p>
-
   </article>
   <!-- Presenter Notes -->
 </slide>
@@ -42775,13 +42751,14 @@ slide comments
 <ul>
 <li>Minimize Modified Expected Shortfall</li>
 <li>Minimize Modified Expected Shortfall with Risk Budget Limit</li>
-<li>Minimize Modified Expected Shortfall with Equal Risk Contribution
-&lt;!--
-Add risk budget objective to minimize concentration of percentage component contribution to risk. Concentration is defined as the Herfindahl Hirschman Index (HHI).</li>
+<li>Minimize Modified Expected Shortfall with Equal Risk Contribution</li>
 </ul>
 
-<p>\[ \sum_{i=1}^n x_i^2 \]
---&gt;</p>
+<!--
+Add risk budget objective to minimize concentration of percentage component contribution to risk. Concentration is defined as the Herfindahl Hirschman Index (HHI).
+
+$$ \sum_{i=1}^n x_i^2 $$
+-->
 
 <!--
 * ES is coherent and is a convex function of the weights
