@@ -219,6 +219,6 @@ colnames(ret.crra) <- "CRRA"
 png(paste(figures.dir, "ret_crra.png", sep="/"), height = fig.height, width = fig.width)
 charts.PerformanceSummary(cbind(ret.bt.opt, ret.crra), 
                           main="Optimization Performance",
-                          colorset=bluemono)
+                          colorset=c(bluemono[1:3], "black"))
 dev.off()
 

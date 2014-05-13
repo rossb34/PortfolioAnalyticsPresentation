@@ -42,7 +42,7 @@ General Objectives
 * Maximize a measure of gain per unit measure of risk
 * Minimize a measure of risk
 
-How do we define risk? What about more complex objectives?
+How do we define risk? What about more complex objectives and constraints?
 
 <!--
 Several approaches follow the Markowitz approach using mean return as a measure of gain and standard deviation of returns as a measure of risk. This is an academic approach. 
@@ -243,8 +243,8 @@ Visualization | Data Extraction
 plot | extractObjectiveMeasures
 chart.Concentration | extractStats
 chart.EfficientFrontier | extractWeights
-chart.RiskBudget | print
-chart.RiskReward | summary
+chart.RiskReward | print
+chart.RiskBudget | summary
 chart.Weights | 
 
 <!--
@@ -253,7 +253,7 @@ Brief explanation of each function.
 
 ---
 
-## Example 1: Data Setup
+## Stock Data Setup
 Here we will look at portfolio optimization in the context of stocks.
 
 * Selection of large cap, mid cap, and small cap stocks from CRSP data
@@ -282,143 +282,8 @@ slide comments
 
 ---
 
-## Minimum Variance Portfolio
-Here we consider a portfolio of stocks. Our objective is to minimize portfolio variance subect to full investment and box constraints. We will use out of sample backtesting to compare the sample covariance matrix estimate and a Ledoit-Wolf shinkage estimate.
-
-$$
-\min_{w} w^{T} \Sigma w
-$$
-
-<!--
-Demonstrate a custom moments function to compare a sample covariance matrix estimate and a Ledoit-Wolf shrinkage covariance matrix estimate. An alternative is a robust (MCD, MVE, etc.) estimate, DCC GARCH model, factor model, etc.
--->
-
----
-
-## Specify Portfolio
-```{r,eval=FALSE}
-# Specify an initial portfolio
-stocks <- colnames(equity.data)
-portf.init <- portfolio.spec(stocks)
-
-# Add full investment constraint such that the weights sum to 1
-portf.minvar <- add.constraint(portf.init, type="full_investment")
-
-# Add box constraint such that no asset can have a weight of greater than
-# 45% or less than 1%
-portf.minvar <- add.constraint(portf.minvar, type="box", min=0.01, max=0.45)
-
-# Add objective to minimize portfolio variance
-portf.minvar <- add.objective(portf.minvar, type="risk", name="var")
-```
-
-<!--
-This is a very basic portfolio with full investment and box constraints and risk objective.
--->
-
----
-
-## Ledoit-Wolf Shrinkage Estimate
-The default function for `momentFUN` is `set.portfolio.moments`. We need to write our own function to estimate the covariance matrix.
-```{r, eval=FALSE}
-# Function to estimate covariance matrix via Ledoit-Wolf shrinkage
-lw.sigma <- function(R, ...){
-  out <- list()
-  out$sigma <- lwShrink(R)$cov
-  return(out)
-}
-```
-
-<!--
-slide comments
--->
-
----
-
-## Run Optimization
-```{r, eval=FALSE, tidy=FALSE}
-# Backtest using sample covariance matrix estimate
-opt.minVarSample <- optimize.portfolio.rebalancing(equity.data, portf.minvar, 
-                                                   optimize_method="ROI", 
-                                                   rebalance_on="quarters", 
-                                                   training_period=400, 
-                                                   trailing_periods=250)
-
-# Backtest using Ledoit-Wolf shrinkage covariance matrix estimate
-opt.minVarLW <- optimize.portfolio.rebalancing(equity.data, portf.minvar, 
-                                               optimize_method="ROI", 
-                                               momentFUN=lw.sigma,
-                                               rebalance_on="quarters", 
-                                               training_period=400, 
-                                               trailing_periods=250)
-```
-
-<!---
-Explain each of the rebalancing parameters
-* rebalance_on takes a character vector. Must be a valid value for xts::endpoints
-* training\_period specify the initial training period for returns
-* trailing\_period can specify a moving window (e.g. always using the most recent 60 periods) or growing window with trailing\_periods=NULL.
--->
-
----
-
-## Chart Weights Through Time
-```{r, eval=FALSE}
-chart.Weights(opt.minVarSample, main="minVarSample Weights", legend.loc=NULL)
-chart.Weights(opt.minVarLW, main="minVarLW Weights", legend.loc=NULL)
-```
-![](figures/weights_minVarSample.png)
-![](figures/weights_minVarLW.png)
-
-<!--
-slide comments
--->
-
-<!--
----
-
-## Chart Weights Through Time (interactive!)
-```{r, results = 'asis', comment = NA, message = F, echo = F}
-load("figures/w1.rda")
-w1$show('inline')
-```
-
-<!--
-slide comments
--->
--->
-
----
-
-
-## Compute Returns
-```{r, eval=FALSE}
-ret.minVarSample <- summary(opt.minVarSample)$portfolio_returns
-ret.minVarRobust <- summary(opt.minVarLW)$portfolio_returns
-ret.minVar <- cbind(ret.minVarSample, ret.minVarRobust)
-colnames(ret.minVar) <- c("Sample", "LW")
-```
-
-<!--
-slide comments
--->
-
----
-
-## Chart Performance
-```{r, eval=FALSE}
-charts.PerformanceSummary(ret.minVar)
-```
-![](figures/ret_minVar.png)
-
-<!--
-slide comments
--->
-
----
-
-## Example 2: Market Neutral Portfolio
-Here we consider a portfolio of stocks. Our objective is to maximize portfolio return with a target of 0.0015 and minimize portfolio StdDev with a target of 0.02 subject to dollar neutral, beta, box, and position limit constraints. We will use the same data considered in Example 1.
+## Example 1: Market Neutral Portfolio
+Here we consider a portfolio of stocks. Our objective is to maximize portfolio return with a target of 0.0015 and minimize portfolio StdDev with a target of 0.02 subject to dollar neutral, beta, box, and position limit constraints.
 
 <!--
 This involves combining several constraints. This is an MIQPQC problem that can't be solved by quadprog so we will use random portfolios. Good example of a problem with layering multiple constraints and objectives.
@@ -473,7 +338,7 @@ explain the objectives, specifically the target argument
 ## Run Optimization
 ```{r, eval=FALSE, tidy=FALSE}
 # Generate random portfolios
-rp <- random_portfolios(portf.dn, 10000, "sample", eliminate=TRUE)
+rp <- random_portfolios(portf.dn, 10000, "sample")
 
 # Run the optimization
 opt.dn <- optimize.portfolio(equity.data, portf.dn.StdDev, 
@@ -499,7 +364,7 @@ Demonstrates the plot method. Visualize the optimal and feasible portfolios in r
 
 ---
 
-## Example 3: Data Setup
+## EDHEC Data Setup
 Here we will look at portfolio optimization in the context of portfolio of hedge funds.
 
 * EDHEC-Risk Alternative Indexes monthly returns from 1/31/1997 to 1/31/2014
@@ -535,18 +400,18 @@ colnames(R) <- c("CA", "EMN", "FIA", "CTAG", "EM", "GM")
 * Periods of coincident drawdowns
 -->
 
+<!--
 ---
 
 ## Distribution of Monthly Returns
 ![](figures/edhec_box.png)
 
-<!--
 slide comments
 -->
 
 ---
 
-## Minimum Expected Shortfall
+## Example 2: Minimum Expected Shortfall
 Consider an allocation to hedge funds using the EDHEC-Risk Alternative Index as a proxy. This will be an extended example starting with an objective to minimize modified expected shortfall, then add risk budget percent contribution limit, and finally add equal risk contribution limit.
 
 * Minimize Modified Expected Shortfall
@@ -624,8 +489,7 @@ Key points here are that we are creating 3 new portfolios by reusing the initial
 # Combine the 3 portfolios
 portf <- combine.portfolios(list(minES=portf.minES, 
                                  minES.RB=portf.minES.RB, 
-                                 minES.EqRB=portf.minES.EqRB)
-                            )
+                                 minES.EqRB=portf.minES.EqRB))
 
 # Run the optimization
 opt.minES <- optimize.portfolio(R, portf, optimize_method="DEoptim", 
@@ -787,7 +651,7 @@ slide comments
 
 ---
 
-## Example 4: Maximize CRRA
+## Example 3: Maximize CRRA
 Consider an allocation to hedge funds using the EDHEC-Risk Alternative Index as a proxy. Our objective to maximize the fourth order expansion of the Constant Relative Risk Aversion (CRRA) expected utility function as in the Boudt paper and Martellini paper. We use the same data as Example 3.
 
 $$
@@ -980,7 +844,7 @@ slide comments
 Many thanks to...
 
 * Google: funding for Google Summer of Code (GSoC)
-* UW CF & RM Program: continued work on PortfolioAnalytics
+* UW CF&RM Program: continued work on PortfolioAnalytics
 * GSoC Mentors: Brian Peterson, Peter Carl, Doug Martin, and Guy Yollin
 * R/Finance Committee
 
@@ -990,6 +854,25 @@ Many thanks to...
 - R/Finance Committee for the conference and the opportunity to talk about PortfolioAnalytics.
 - Google for funding the Google Summer of Code for PortfolioAnalytics and many other proposals for R
 -->
+
+---
+
+## PortfolioAnalytics Links
+PortfolioAnalytics is on R-Forge in the ReturnAnalytics project
+
+* [PortfolioAnalytics](https://r-forge.r-project.org/projects/returnanalytics/)
+
+Source code for the slides
+
+* https://github.com/rossb34/PortfolioAnalyticsPresentation
+
+and view it here
+
+* http://rossb34.github.io/PortfolioAnalyticsPresentation/
+
+---
+
+## Any Questions?
 
 ---
 
@@ -1004,5 +887,4 @@ Many thanks to...
 * [W.T. Shaw Random Portfolios](http://papers.ssrn.com/sol3/papers.cfm?abstract_id=1856476)
 * Martellini paper
 * Boudt paper
-* [PortfolioAnalytics on R-Forge](https://r-forge.r-project.org/projects/returnanalytics/)
 * [Shiny App](http://spark.rstudio.com/rossbennett3/PortfolioOptimization/)

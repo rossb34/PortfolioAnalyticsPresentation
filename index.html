@@ -86,7 +86,7 @@
 <li>Minimize a measure of risk</li>
 </ul>
 
-<p>How do we define risk? What about more complex objectives?</p>
+<p>How do we define risk? What about more complex objectives and constraints?</p>
 
 <!--
 Several approaches follow the Markowitz approach using mean return as a measure of gain and standard deviation of returns as a measure of risk. This is an academic approach. 
@@ -37694,11 +37694,11 @@ Objectives are added to the portfolio object with the add.objective function. Ea
 <td>extractWeights</td>
 </tr>
 <tr>
-<td>chart.RiskBudget</td>
+<td>chart.RiskReward</td>
 <td>print</td>
 </tr>
 <tr>
-<td>chart.RiskReward</td>
+<td>chart.RiskBudget</td>
 <td>summary</td>
 </tr>
 <tr>
@@ -37717,7 +37717,7 @@ Brief explanation of each function.
 
 <slide class="" id="slide-15" style="background:;">
   <hgroup>
-    <h2>Example 1: Data Setup</h2>
+    <h2>Stock Data Setup</h2>
   </hgroup>
   <article data-timings="">
     <p>Here we will look at portfolio optimization in the context of stocks.</p>
@@ -37759,4805 +37759,10 @@ slide comments
 
 <slide class="" id="slide-17" style="background:;">
   <hgroup>
-    <h2>Minimum Variance Portfolio</h2>
+    <h2>Example 1: Market Neutral Portfolio</h2>
   </hgroup>
   <article data-timings="">
-    <p>Here we consider a portfolio of stocks. Our objective is to minimize portfolio variance subect to full investment and box constraints. We will use out of sample backtesting to compare the sample covariance matrix estimate and a Ledoit-Wolf shinkage estimate.</p>
-
-<p>\[
-\min_{w} w^{T} \Sigma w
-\]</p>
-
-<!--
-Demonstrate a custom moments function to compare a sample covariance matrix estimate and a Ledoit-Wolf shrinkage covariance matrix estimate. An alternative is a robust (MCD, MVE, etc.) estimate, DCC GARCH model, factor model, etc.
--->
-
-  </article>
-  <!-- Presenter Notes -->
-</slide>
-
-<slide class="" id="slide-18" style="background:;">
-  <hgroup>
-    <h2>Specify Portfolio</h2>
-  </hgroup>
-  <article data-timings="">
-    <pre><code class="r"># Specify an initial portfolio
-stocks &lt;- colnames(equity.data)
-portf.init &lt;- portfolio.spec(stocks)
-
-# Add full investment constraint such that the weights sum to 1
-portf.minvar &lt;- add.constraint(portf.init, type = &quot;full_investment&quot;)
-
-# Add box constraint such that no asset can have a weight of greater than
-# 45% or less than 1%
-portf.minvar &lt;- add.constraint(portf.minvar, type = &quot;box&quot;, min = 0.01, max = 0.45)
-
-# Add objective to minimize portfolio variance
-portf.minvar &lt;- add.objective(portf.minvar, type = &quot;risk&quot;, name = &quot;var&quot;)
-</code></pre>
-
-<!--
-This is a very basic portfolio with full investment and box constraints and risk objective.
--->
-
-  </article>
-  <!-- Presenter Notes -->
-</slide>
-
-<slide class="" id="slide-19" style="background:;">
-  <hgroup>
-    <h2>Ledoit-Wolf Shrinkage Estimate</h2>
-  </hgroup>
-  <article data-timings="">
-    <p>The default function for <code>momentFUN</code> is <code>set.portfolio.moments</code>. We need to write our own function to estimate the covariance matrix.</p>
-
-<pre><code class="r"># Function to estimate covariance matrix via Ledoit-Wolf shrinkage
-lw.sigma &lt;- function(R, ...) {
-    out &lt;- list()
-    out$sigma &lt;- lwShrink(R)$cov
-    return(out)
-}
-</code></pre>
-
-<!--
-slide comments
--->
-
-  </article>
-  <!-- Presenter Notes -->
-</slide>
-
-<slide class="" id="slide-20" style="background:;">
-  <hgroup>
-    <h2>Run Optimization</h2>
-  </hgroup>
-  <article data-timings="">
-    <pre><code class="r"># Backtest using sample covariance matrix estimate
-opt.minVarSample &lt;- optimize.portfolio.rebalancing(equity.data, portf.minvar, 
-                                                   optimize_method=&quot;ROI&quot;, 
-                                                   rebalance_on=&quot;quarters&quot;, 
-                                                   training_period=400, 
-                                                   trailing_periods=250)
-
-# Backtest using Ledoit-Wolf shrinkage covariance matrix estimate
-opt.minVarLW &lt;- optimize.portfolio.rebalancing(equity.data, portf.minvar, 
-                                               optimize_method=&quot;ROI&quot;, 
-                                               momentFUN=lw.sigma,
-                                               rebalance_on=&quot;quarters&quot;, 
-                                               training_period=400, 
-                                               trailing_periods=250)
-</code></pre>
-
-<!---
-Explain each of the rebalancing parameters
-* rebalance_on takes a character vector. Must be a valid value for xts::endpoints
-* training\_period specify the initial training period for returns
-* trailing\_period can specify a moving window (e.g. always using the most recent 60 periods) or growing window with trailing\_periods=NULL.
--->
-
-  </article>
-  <!-- Presenter Notes -->
-</slide>
-
-<slide class="" id="slide-21" style="background:;">
-  <hgroup>
-    <h2>Chart Weights Through Time</h2>
-  </hgroup>
-  <article data-timings="">
-    <pre><code class="r">chart.Weights(opt.minVarSample, main = &quot;minVarSample Weights&quot;, legend.loc = NULL)
-chart.Weights(opt.minVarLW, main = &quot;minVarLW Weights&quot;, legend.loc = NULL)
-</code></pre>
-
-<p><img src="figures/weights_minVarSample.png" alt="">
-<img src="figures/weights_minVarLW.png" alt=""></p>
-
-<!--
-slide comments
--->
-
-<!--
----
-
-## Chart Weights Through Time (interactive!)
-
-<div id = 'chart20af7c33d3c0' class = 'rChart nvd3'></div>
-<script type='text/javascript'>
- $(document).ready(function(){
-      drawchart20af7c33d3c0()
-    });
-    function drawchart20af7c33d3c0(){  
-      var opts = {
- "dom": "chart20af7c33d3c0",
-"width":    800,
-"height":    400,
-"x": "date",
-"y": "weight",
-"group": "stock",
-"type": "stackedAreaChart",
-"id": "chart20af7c33d3c0" 
-},
-        data = [
- {
- "date":          12689,
-"stock": "ORCL",
-"weight":           0.01 
-},
-{
- "date":          12780,
-"stock": "ORCL",
-"weight":           0.01 
-},
-{
- "date":          12871,
-"stock": "ORCL",
-"weight":           0.01 
-},
-{
- "date":          12962,
-"stock": "ORCL",
-"weight":           0.01 
-},
-{
- "date":          13053,
-"stock": "ORCL",
-"weight":           0.01 
-},
-{
- "date":          13144,
-"stock": "ORCL",
-"weight":           0.01 
-},
-{
- "date":          13235,
-"stock": "ORCL",
-"weight":           0.01 
-},
-{
- "date":          13326,
-"stock": "ORCL",
-"weight":           0.01 
-},
-{
- "date":          13417,
-"stock": "ORCL",
-"weight":           0.01 
-},
-{
- "date":          13508,
-"stock": "ORCL",
-"weight":           0.01 
-},
-{
- "date":          13599,
-"stock": "ORCL",
-"weight":           0.01 
-},
-{
- "date":          13690,
-"stock": "ORCL",
-"weight":           0.01 
-},
-{
- "date":          13781,
-"stock": "ORCL",
-"weight":           0.01 
-},
-{
- "date":          13872,
-"stock": "ORCL",
-"weight":           0.01 
-},
-{
- "date":          13963,
-"stock": "ORCL",
-"weight":           0.01 
-},
-{
- "date":          14054,
-"stock": "ORCL",
-"weight":           0.01 
-},
-{
- "date":          14152,
-"stock": "ORCL",
-"weight":           0.01 
-},
-{
- "date":          14243,
-"stock": "ORCL",
-"weight":           0.01 
-},
-{
- "date":          14334,
-"stock": "ORCL",
-"weight":           0.01 
-},
-{
- "date":          14425,
-"stock": "ORCL",
-"weight":           0.01 
-},
-{
- "date":          14516,
-"stock": "ORCL",
-"weight":           0.01 
-},
-{
- "date":          14607,
-"stock": "ORCL",
-"weight":           0.01 
-},
-{
- "date":          14698,
-"stock": "ORCL",
-"weight":           0.01 
-},
-{
- "date":          14789,
-"stock": "ORCL",
-"weight":           0.01 
-},
-{
- "date":          14880,
-"stock": "ORCL",
-"weight":           0.01 
-},
-{
- "date":          14971,
-"stock": "ORCL",
-"weight":           0.01 
-},
-{
- "date":          12689,
-"stock": "MSFT",
-"weight":           0.01 
-},
-{
- "date":          12780,
-"stock": "MSFT",
-"weight":           0.01 
-},
-{
- "date":          12871,
-"stock": "MSFT",
-"weight":           0.01 
-},
-{
- "date":          12962,
-"stock": "MSFT",
-"weight":           0.01 
-},
-{
- "date":          13053,
-"stock": "MSFT",
-"weight":           0.01 
-},
-{
- "date":          13144,
-"stock": "MSFT",
-"weight":           0.01 
-},
-{
- "date":          13235,
-"stock": "MSFT",
-"weight":           0.01 
-},
-{
- "date":          13326,
-"stock": "MSFT",
-"weight":           0.01 
-},
-{
- "date":          13417,
-"stock": "MSFT",
-"weight":           0.01 
-},
-{
- "date":          13508,
-"stock": "MSFT",
-"weight":           0.01 
-},
-{
- "date":          13599,
-"stock": "MSFT",
-"weight":           0.01 
-},
-{
- "date":          13690,
-"stock": "MSFT",
-"weight":           0.01 
-},
-{
- "date":          13781,
-"stock": "MSFT",
-"weight":           0.01 
-},
-{
- "date":          13872,
-"stock": "MSFT",
-"weight":           0.01 
-},
-{
- "date":          13963,
-"stock": "MSFT",
-"weight":           0.01 
-},
-{
- "date":          14054,
-"stock": "MSFT",
-"weight":           0.01 
-},
-{
- "date":          14152,
-"stock": "MSFT",
-"weight":           0.01 
-},
-{
- "date":          14243,
-"stock": "MSFT",
-"weight":           0.01 
-},
-{
- "date":          14334,
-"stock": "MSFT",
-"weight":           0.01 
-},
-{
- "date":          14425,
-"stock": "MSFT",
-"weight":           0.01 
-},
-{
- "date":          14516,
-"stock": "MSFT",
-"weight":           0.01 
-},
-{
- "date":          14607,
-"stock": "MSFT",
-"weight":           0.01 
-},
-{
- "date":          14698,
-"stock": "MSFT",
-"weight":           0.01 
-},
-{
- "date":          14789,
-"stock": "MSFT",
-"weight":           0.01 
-},
-{
- "date":          14880,
-"stock": "MSFT",
-"weight":           0.01 
-},
-{
- "date":          14971,
-"stock": "MSFT",
-"weight":           0.01 
-},
-{
- "date":          12689,
-"stock": "HON",
-"weight":           0.01 
-},
-{
- "date":          12780,
-"stock": "HON",
-"weight":           0.01 
-},
-{
- "date":          12871,
-"stock": "HON",
-"weight":           0.01 
-},
-{
- "date":          12962,
-"stock": "HON",
-"weight":           0.01 
-},
-{
- "date":          13053,
-"stock": "HON",
-"weight":           0.01 
-},
-{
- "date":          13144,
-"stock": "HON",
-"weight":           0.01 
-},
-{
- "date":          13235,
-"stock": "HON",
-"weight":           0.01 
-},
-{
- "date":          13326,
-"stock": "HON",
-"weight":           0.01 
-},
-{
- "date":          13417,
-"stock": "HON",
-"weight":           0.01 
-},
-{
- "date":          13508,
-"stock": "HON",
-"weight":           0.01 
-},
-{
- "date":          13599,
-"stock": "HON",
-"weight":           0.01 
-},
-{
- "date":          13690,
-"stock": "HON",
-"weight":           0.01 
-},
-{
- "date":          13781,
-"stock": "HON",
-"weight":           0.01 
-},
-{
- "date":          13872,
-"stock": "HON",
-"weight":           0.01 
-},
-{
- "date":          13963,
-"stock": "HON",
-"weight":           0.01 
-},
-{
- "date":          14054,
-"stock": "HON",
-"weight":           0.01 
-},
-{
- "date":          14152,
-"stock": "HON",
-"weight":           0.01 
-},
-{
- "date":          14243,
-"stock": "HON",
-"weight":           0.01 
-},
-{
- "date":          14334,
-"stock": "HON",
-"weight":           0.01 
-},
-{
- "date":          14425,
-"stock": "HON",
-"weight":           0.01 
-},
-{
- "date":          14516,
-"stock": "HON",
-"weight":           0.01 
-},
-{
- "date":          14607,
-"stock": "HON",
-"weight":           0.01 
-},
-{
- "date":          14698,
-"stock": "HON",
-"weight":           0.01 
-},
-{
- "date":          14789,
-"stock": "HON",
-"weight":           0.01 
-},
-{
- "date":          14880,
-"stock": "HON",
-"weight":           0.01 
-},
-{
- "date":          14971,
-"stock": "HON",
-"weight":           0.01 
-},
-{
- "date":          12689,
-"stock": "EMC",
-"weight":           0.01 
-},
-{
- "date":          12780,
-"stock": "EMC",
-"weight":           0.01 
-},
-{
- "date":          12871,
-"stock": "EMC",
-"weight":           0.01 
-},
-{
- "date":          12962,
-"stock": "EMC",
-"weight":           0.01 
-},
-{
- "date":          13053,
-"stock": "EMC",
-"weight":           0.01 
-},
-{
- "date":          13144,
-"stock": "EMC",
-"weight":           0.01 
-},
-{
- "date":          13235,
-"stock": "EMC",
-"weight":           0.01 
-},
-{
- "date":          13326,
-"stock": "EMC",
-"weight":           0.01 
-},
-{
- "date":          13417,
-"stock": "EMC",
-"weight":           0.01 
-},
-{
- "date":          13508,
-"stock": "EMC",
-"weight":           0.01 
-},
-{
- "date":          13599,
-"stock": "EMC",
-"weight":           0.01 
-},
-{
- "date":          13690,
-"stock": "EMC",
-"weight":           0.01 
-},
-{
- "date":          13781,
-"stock": "EMC",
-"weight":           0.01 
-},
-{
- "date":          13872,
-"stock": "EMC",
-"weight":           0.01 
-},
-{
- "date":          13963,
-"stock": "EMC",
-"weight":           0.01 
-},
-{
- "date":          14054,
-"stock": "EMC",
-"weight":           0.01 
-},
-{
- "date":          14152,
-"stock": "EMC",
-"weight":           0.01 
-},
-{
- "date":          14243,
-"stock": "EMC",
-"weight":           0.01 
-},
-{
- "date":          14334,
-"stock": "EMC",
-"weight":           0.01 
-},
-{
- "date":          14425,
-"stock": "EMC",
-"weight":           0.01 
-},
-{
- "date":          14516,
-"stock": "EMC",
-"weight":           0.01 
-},
-{
- "date":          14607,
-"stock": "EMC",
-"weight":           0.01 
-},
-{
- "date":          14698,
-"stock": "EMC",
-"weight":           0.01 
-},
-{
- "date":          14789,
-"stock": "EMC",
-"weight":           0.01 
-},
-{
- "date":          14880,
-"stock": "EMC",
-"weight":           0.01 
-},
-{
- "date":          14971,
-"stock": "EMC",
-"weight":           0.01 
-},
-{
- "date":          12689,
-"stock": "DELL",
-"weight":           0.01 
-},
-{
- "date":          12780,
-"stock": "DELL",
-"weight":           0.01 
-},
-{
- "date":          12871,
-"stock": "DELL",
-"weight":           0.01 
-},
-{
- "date":          12962,
-"stock": "DELL",
-"weight":           0.01 
-},
-{
- "date":          13053,
-"stock": "DELL",
-"weight":           0.01 
-},
-{
- "date":          13144,
-"stock": "DELL",
-"weight":           0.01 
-},
-{
- "date":          13235,
-"stock": "DELL",
-"weight":           0.01 
-},
-{
- "date":          13326,
-"stock": "DELL",
-"weight":           0.01 
-},
-{
- "date":          13417,
-"stock": "DELL",
-"weight":           0.01 
-},
-{
- "date":          13508,
-"stock": "DELL",
-"weight":           0.01 
-},
-{
- "date":          13599,
-"stock": "DELL",
-"weight":           0.01 
-},
-{
- "date":          13690,
-"stock": "DELL",
-"weight":           0.01 
-},
-{
- "date":          13781,
-"stock": "DELL",
-"weight":           0.01 
-},
-{
- "date":          13872,
-"stock": "DELL",
-"weight": 0.01503241146447 
-},
-{
- "date":          13963,
-"stock": "DELL",
-"weight": 0.01449005070478 
-},
-{
- "date":          14054,
-"stock": "DELL",
-"weight": 0.02279248371229 
-},
-{
- "date":          14152,
-"stock": "DELL",
-"weight": 0.03498017199176 
-},
-{
- "date":          14243,
-"stock": "DELL",
-"weight": 0.01295608578269 
-},
-{
- "date":          14334,
-"stock": "DELL",
-"weight": 0.02162381645153 
-},
-{
- "date":          14425,
-"stock": "DELL",
-"weight": 0.01501908006339 
-},
-{
- "date":          14516,
-"stock": "DELL",
-"weight": 0.0147925215602 
-},
-{
- "date":          14607,
-"stock": "DELL",
-"weight":           0.01 
-},
-{
- "date":          14698,
-"stock": "DELL",
-"weight":           0.01 
-},
-{
- "date":          14789,
-"stock": "DELL",
-"weight":           0.01 
-},
-{
- "date":          14880,
-"stock": "DELL",
-"weight":           0.01 
-},
-{
- "date":          14971,
-"stock": "DELL",
-"weight":           0.01 
-},
-{
- "date":          12689,
-"stock": "KO",
-"weight": 0.05677116459124 
-},
-{
- "date":          12780,
-"stock": "KO",
-"weight": 0.08497738473103 
-},
-{
- "date":          12871,
-"stock": "KO",
-"weight": 0.1203868549117 
-},
-{
- "date":          12962,
-"stock": "KO",
-"weight": 0.1096676789066 
-},
-{
- "date":          13053,
-"stock": "KO",
-"weight": 0.1071281364332 
-},
-{
- "date":          13144,
-"stock": "KO",
-"weight": 0.1304080363009 
-},
-{
- "date":          13235,
-"stock": "KO",
-"weight": 0.1219294306757 
-},
-{
- "date":          13326,
-"stock": "KO",
-"weight": 0.143320818191 
-},
-{
- "date":          13417,
-"stock": "KO",
-"weight": 0.1308038639855 
-},
-{
- "date":          13508,
-"stock": "KO",
-"weight": 0.1241687739741 
-},
-{
- "date":          13599,
-"stock": "KO",
-"weight": 0.1287702651563 
-},
-{
- "date":          13690,
-"stock": "KO",
-"weight": 0.0755273682945 
-},
-{
- "date":          13781,
-"stock": "KO",
-"weight": 0.07323915155307 
-},
-{
- "date":          13872,
-"stock": "KO",
-"weight": 0.1259525752134 
-},
-{
- "date":          13963,
-"stock": "KO",
-"weight": 0.1225258083044 
-},
-{
- "date":          14054,
-"stock": "KO",
-"weight": 0.0740363751382 
-},
-{
- "date":          14152,
-"stock": "KO",
-"weight": 0.03631727094922 
-},
-{
- "date":          14243,
-"stock": "KO",
-"weight": 0.09918656895077 
-},
-{
- "date":          14334,
-"stock": "KO",
-"weight": 0.07184875555677 
-},
-{
- "date":          14425,
-"stock": "KO",
-"weight": 0.1248734414283 
-},
-{
- "date":          14516,
-"stock": "KO",
-"weight": 0.1369094116794 
-},
-{
- "date":          14607,
-"stock": "KO",
-"weight": 0.113905963648 
-},
-{
- "date":          14698,
-"stock": "KO",
-"weight": 0.1260289329595 
-},
-{
- "date":          14789,
-"stock": "KO",
-"weight": 0.131599265834 
-},
-{
- "date":          14880,
-"stock": "KO",
-"weight": 0.1275762760037 
-},
-{
- "date":          14971,
-"stock": "KO",
-"weight": 0.1312812309523 
-},
-{
- "date":          12689,
-"stock": "DD",
-"weight":           0.01 
-},
-{
- "date":          12780,
-"stock": "DD",
-"weight":           0.01 
-},
-{
- "date":          12871,
-"stock": "DD",
-"weight":           0.01 
-},
-{
- "date":          12962,
-"stock": "DD",
-"weight":           0.01 
-},
-{
- "date":          13053,
-"stock": "DD",
-"weight":           0.01 
-},
-{
- "date":          13144,
-"stock": "DD",
-"weight":           0.01 
-},
-{
- "date":          13235,
-"stock": "DD",
-"weight":           0.01 
-},
-{
- "date":          13326,
-"stock": "DD",
-"weight":           0.01 
-},
-{
- "date":          13417,
-"stock": "DD",
-"weight":           0.01 
-},
-{
- "date":          13508,
-"stock": "DD",
-"weight":           0.01 
-},
-{
- "date":          13599,
-"stock": "DD",
-"weight":           0.01 
-},
-{
- "date":          13690,
-"stock": "DD",
-"weight":           0.01 
-},
-{
- "date":          13781,
-"stock": "DD",
-"weight":           0.01 
-},
-{
- "date":          13872,
-"stock": "DD",
-"weight":           0.01 
-},
-{
- "date":          13963,
-"stock": "DD",
-"weight":           0.01 
-},
-{
- "date":          14054,
-"stock": "DD",
-"weight":           0.01 
-},
-{
- "date":          14152,
-"stock": "DD",
-"weight":           0.01 
-},
-{
- "date":          14243,
-"stock": "DD",
-"weight":           0.01 
-},
-{
- "date":          14334,
-"stock": "DD",
-"weight":           0.01 
-},
-{
- "date":          14425,
-"stock": "DD",
-"weight":           0.01 
-},
-{
- "date":          14516,
-"stock": "DD",
-"weight":           0.01 
-},
-{
- "date":          14607,
-"stock": "DD",
-"weight":           0.01 
-},
-{
- "date":          14698,
-"stock": "DD",
-"weight":           0.01 
-},
-{
- "date":          14789,
-"stock": "DD",
-"weight":           0.01 
-},
-{
- "date":          14880,
-"stock": "DD",
-"weight":           0.01 
-},
-{
- "date":          14971,
-"stock": "DD",
-"weight":           0.01 
-},
-{
- "date":          12689,
-"stock": "XOM",
-"weight":           0.01 
-},
-{
- "date":          12780,
-"stock": "XOM",
-"weight":           0.01 
-},
-{
- "date":          12871,
-"stock": "XOM",
-"weight":           0.01 
-},
-{
- "date":          12962,
-"stock": "XOM",
-"weight":           0.01 
-},
-{
- "date":          13053,
-"stock": "XOM",
-"weight":           0.01 
-},
-{
- "date":          13144,
-"stock": "XOM",
-"weight":           0.01 
-},
-{
- "date":          13235,
-"stock": "XOM",
-"weight":           0.01 
-},
-{
- "date":          13326,
-"stock": "XOM",
-"weight":           0.01 
-},
-{
- "date":          13417,
-"stock": "XOM",
-"weight":           0.01 
-},
-{
- "date":          13508,
-"stock": "XOM",
-"weight":           0.01 
-},
-{
- "date":          13599,
-"stock": "XOM",
-"weight":           0.01 
-},
-{
- "date":          13690,
-"stock": "XOM",
-"weight":           0.01 
-},
-{
- "date":          13781,
-"stock": "XOM",
-"weight": 0.01472321176072 
-},
-{
- "date":          13872,
-"stock": "XOM",
-"weight": 0.02309536379927 
-},
-{
- "date":          13963,
-"stock": "XOM",
-"weight":           0.01 
-},
-{
- "date":          14054,
-"stock": "XOM",
-"weight":           0.01 
-},
-{
- "date":          14152,
-"stock": "XOM",
-"weight":           0.01 
-},
-{
- "date":          14243,
-"stock": "XOM",
-"weight": 0.09439347564634 
-},
-{
- "date":          14334,
-"stock": "XOM",
-"weight": 0.1051989064631 
-},
-{
- "date":          14425,
-"stock": "XOM",
-"weight": 0.1040610379877 
-},
-{
- "date":          14516,
-"stock": "XOM",
-"weight": 0.06824241705926 
-},
-{
- "date":          14607,
-"stock": "XOM",
-"weight": 0.07061257142104 
-},
-{
- "date":          14698,
-"stock": "XOM",
-"weight": 0.06925398193511 
-},
-{
- "date":          14789,
-"stock": "XOM",
-"weight": 0.05617208341663 
-},
-{
- "date":          14880,
-"stock": "XOM",
-"weight": 0.05446482758594 
-},
-{
- "date":          14971,
-"stock": "XOM",
-"weight": 0.05225462074595 
-},
-{
- "date":          12689,
-"stock": "GE",
-"weight":           0.01 
-},
-{
- "date":          12780,
-"stock": "GE",
-"weight":           0.01 
-},
-{
- "date":          12871,
-"stock": "GE",
-"weight":           0.01 
-},
-{
- "date":          12962,
-"stock": "GE",
-"weight":           0.01 
-},
-{
- "date":          13053,
-"stock": "GE",
-"weight":           0.01 
-},
-{
- "date":          13144,
-"stock": "GE",
-"weight":           0.01 
-},
-{
- "date":          13235,
-"stock": "GE",
-"weight":           0.01 
-},
-{
- "date":          13326,
-"stock": "GE",
-"weight":           0.01 
-},
-{
- "date":          13417,
-"stock": "GE",
-"weight":           0.01 
-},
-{
- "date":          13508,
-"stock": "GE",
-"weight":           0.01 
-},
-{
- "date":          13599,
-"stock": "GE",
-"weight":           0.01 
-},
-{
- "date":          13690,
-"stock": "GE",
-"weight":           0.01 
-},
-{
- "date":          13781,
-"stock": "GE",
-"weight":           0.01 
-},
-{
- "date":          13872,
-"stock": "GE",
-"weight":           0.01 
-},
-{
- "date":          13963,
-"stock": "GE",
-"weight": 0.04323824455527 
-},
-{
- "date":          14054,
-"stock": "GE",
-"weight": 0.02163016514387 
-},
-{
- "date":          14152,
-"stock": "GE",
-"weight": 0.01033276091845 
-},
-{
- "date":          14243,
-"stock": "GE",
-"weight":           0.01 
-},
-{
- "date":          14334,
-"stock": "GE",
-"weight":           0.01 
-},
-{
- "date":          14425,
-"stock": "GE",
-"weight":           0.01 
-},
-{
- "date":          14516,
-"stock": "GE",
-"weight":           0.01 
-},
-{
- "date":          14607,
-"stock": "GE",
-"weight":           0.01 
-},
-{
- "date":          14698,
-"stock": "GE",
-"weight":           0.01 
-},
-{
- "date":          14789,
-"stock": "GE",
-"weight":           0.01 
-},
-{
- "date":          14880,
-"stock": "GE",
-"weight":           0.01 
-},
-{
- "date":          14971,
-"stock": "GE",
-"weight":           0.01 
-},
-{
- "date":          12689,
-"stock": "IBM",
-"weight":           0.01 
-},
-{
- "date":          12780,
-"stock": "IBM",
-"weight":           0.01 
-},
-{
- "date":          12871,
-"stock": "IBM",
-"weight":           0.01 
-},
-{
- "date":          12962,
-"stock": "IBM",
-"weight":           0.01 
-},
-{
- "date":          13053,
-"stock": "IBM",
-"weight":           0.01 
-},
-{
- "date":          13144,
-"stock": "IBM",
-"weight":           0.01 
-},
-{
- "date":          13235,
-"stock": "IBM",
-"weight":           0.01 
-},
-{
- "date":          13326,
-"stock": "IBM",
-"weight":           0.01 
-},
-{
- "date":          13417,
-"stock": "IBM",
-"weight":           0.01 
-},
-{
- "date":          13508,
-"stock": "IBM",
-"weight":           0.01 
-},
-{
- "date":          13599,
-"stock": "IBM",
-"weight":           0.01 
-},
-{
- "date":          13690,
-"stock": "IBM",
-"weight":           0.01 
-},
-{
- "date":          13781,
-"stock": "IBM",
-"weight":           0.01 
-},
-{
- "date":          13872,
-"stock": "IBM",
-"weight":           0.01 
-},
-{
- "date":          13963,
-"stock": "IBM",
-"weight":           0.01 
-},
-{
- "date":          14054,
-"stock": "IBM",
-"weight":           0.01 
-},
-{
- "date":          14152,
-"stock": "IBM",
-"weight":           0.01 
-},
-{
- "date":          14243,
-"stock": "IBM",
-"weight":           0.01 
-},
-{
- "date":          14334,
-"stock": "IBM",
-"weight":           0.01 
-},
-{
- "date":          14425,
-"stock": "IBM",
-"weight":           0.01 
-},
-{
- "date":          14516,
-"stock": "IBM",
-"weight":           0.01 
-},
-{
- "date":          14607,
-"stock": "IBM",
-"weight":           0.01 
-},
-{
- "date":          14698,
-"stock": "IBM",
-"weight":           0.01 
-},
-{
- "date":          14789,
-"stock": "IBM",
-"weight":           0.01 
-},
-{
- "date":          14880,
-"stock": "IBM",
-"weight":           0.01 
-},
-{
- "date":          14971,
-"stock": "IBM",
-"weight":           0.01 
-},
-{
- "date":          12689,
-"stock": "PEP",
-"weight": 0.09796038199808 
-},
-{
- "date":          12780,
-"stock": "PEP",
-"weight": 0.0848751296314 
-},
-{
- "date":          12871,
-"stock": "PEP",
-"weight": 0.104946406016 
-},
-{
- "date":          12962,
-"stock": "PEP",
-"weight": 0.09518680050938 
-},
-{
- "date":          13053,
-"stock": "PEP",
-"weight": 0.09311278038033 
-},
-{
- "date":          13144,
-"stock": "PEP",
-"weight": 0.07740914580197 
-},
-{
- "date":          13235,
-"stock": "PEP",
-"weight": 0.07336968899725 
-},
-{
- "date":          13326,
-"stock": "PEP",
-"weight": 0.07855879710886 
-},
-{
- "date":          13417,
-"stock": "PEP",
-"weight": 0.05015547723109 
-},
-{
- "date":          13508,
-"stock": "PEP",
-"weight": 0.06143496069471 
-},
-{
- "date":          13599,
-"stock": "PEP",
-"weight": 0.06418189907325 
-},
-{
- "date":          13690,
-"stock": "PEP",
-"weight": 0.2084546698433 
-},
-{
- "date":          13781,
-"stock": "PEP",
-"weight": 0.2484276723653 
-},
-{
- "date":          13872,
-"stock": "PEP",
-"weight": 0.2980036242918 
-},
-{
- "date":          13963,
-"stock": "PEP",
-"weight": 0.2879374219641 
-},
-{
- "date":          14054,
-"stock": "PEP",
-"weight": 0.3144747444691 
-},
-{
- "date":          14152,
-"stock": "PEP",
-"weight": 0.3576597306006 
-},
-{
- "date":          14243,
-"stock": "PEP",
-"weight": 0.2382822165754 
-},
-{
- "date":          14334,
-"stock": "PEP",
-"weight": 0.2989317712145 
-},
-{
- "date":          14425,
-"stock": "PEP",
-"weight":  0.23929485612 
-},
-{
- "date":          14516,
-"stock": "PEP",
-"weight": 0.2342328252326 
-},
-{
- "date":          14607,
-"stock": "PEP",
-"weight": 0.2459572333964 
-},
-{
- "date":          14698,
-"stock": "PEP",
-"weight": 0.2307437662173 
-},
-{
- "date":          14789,
-"stock": "PEP",
-"weight": 0.2228552556883 
-},
-{
- "date":          14880,
-"stock": "PEP",
-"weight": 0.2254756787808 
-},
-{
- "date":          14971,
-"stock": "PEP",
-"weight": 0.2327590931896 
-},
-{
- "date":          12689,
-"stock": "MO",
-"weight": 0.04814097074433 
-},
-{
- "date":          12780,
-"stock": "MO",
-"weight": 0.03001143792041 
-},
-{
- "date":          12871,
-"stock": "MO",
-"weight": 0.03201212532064 
-},
-{
- "date":          12962,
-"stock": "MO",
-"weight": 0.04289355470324 
-},
-{
- "date":          13053,
-"stock": "MO",
-"weight": 0.05437268089988 
-},
-{
- "date":          13144,
-"stock": "MO",
-"weight": 0.05576708085393 
-},
-{
- "date":          13235,
-"stock": "MO",
-"weight": 0.06368448484706 
-},
-{
- "date":          13326,
-"stock": "MO",
-"weight": 0.06568504571278 
-},
-{
- "date":          13417,
-"stock": "MO",
-"weight": 0.06198774253984 
-},
-{
- "date":          13508,
-"stock": "MO",
-"weight": 0.06045399031485 
-},
-{
- "date":          13599,
-"stock": "MO",
-"weight": 0.05177742891272 
-},
-{
- "date":          13690,
-"stock": "MO",
-"weight":           0.01 
-},
-{
- "date":          13781,
-"stock": "MO",
-"weight": 0.02646842994626 
-},
-{
- "date":          13872,
-"stock": "MO",
-"weight": 0.0247874728887 
-},
-{
- "date":          13963,
-"stock": "MO",
-"weight": 0.04648986929569 
-},
-{
- "date":          14054,
-"stock": "MO",
-"weight": 0.03736217877452 
-},
-{
- "date":          14152,
-"stock": "MO",
-"weight": 0.02065477471119 
-},
-{
- "date":          14243,
-"stock": "MO",
-"weight": 0.118512037456 
-},
-{
- "date":          14334,
-"stock": "MO",
-"weight": 0.1917459628396 
-},
-{
- "date":          14425,
-"stock": "MO",
-"weight": 0.2022657354236 
-},
-{
- "date":          14516,
-"stock": "MO",
-"weight": 0.235392434728 
-},
-{
- "date":          14607,
-"stock": "MO",
-"weight": 0.2534299526118 
-},
-{
- "date":          14698,
-"stock": "MO",
-"weight": 0.2559541651161 
-},
-{
- "date":          14789,
-"stock": "MO",
-"weight": 0.2663984414556 
-},
-{
- "date":          14880,
-"stock": "MO",
-"weight": 0.2654341535942 
-},
-{
- "date":          14971,
-"stock": "MO",
-"weight": 0.2631446751809 
-},
-{
- "date":          12689,
-"stock": "COP",
-"weight": 0.083424407532 
-},
-{
- "date":          12780,
-"stock": "COP",
-"weight": 0.03540558833105 
-},
-{
- "date":          12871,
-"stock": "COP",
-"weight": 0.1035921243592 
-},
-{
- "date":          12962,
-"stock": "COP",
-"weight": 0.1044961398382 
-},
-{
- "date":          13053,
-"stock": "COP",
-"weight": 0.07771976038599 
-},
-{
- "date":          13144,
-"stock": "COP",
-"weight": 0.06206758411869 
-},
-{
- "date":          13235,
-"stock": "COP",
-"weight": 0.07373434069398 
-},
-{
- "date":          13326,
-"stock": "COP",
-"weight": 0.06386890630108 
-},
-{
- "date":          13417,
-"stock": "COP",
-"weight": 0.06593678520582 
-},
-{
- "date":          13508,
-"stock": "COP",
-"weight": 0.06168853546862 
-},
-{
- "date":          13599,
-"stock": "COP",
-"weight": 0.06887904679064 
-},
-{
- "date":          13690,
-"stock": "COP",
-"weight": 0.05463342463008 
-},
-{
- "date":          13781,
-"stock": "COP",
-"weight": 0.0268290681177 
-},
-{
- "date":          13872,
-"stock": "COP",
-"weight": 0.02835803263486 
-},
-{
- "date":          13963,
-"stock": "COP",
-"weight":           0.01 
-},
-{
- "date":          14054,
-"stock": "COP",
-"weight":           0.01 
-},
-{
- "date":          14152,
-"stock": "COP",
-"weight":           0.01 
-},
-{
- "date":          14243,
-"stock": "COP",
-"weight":           0.01 
-},
-{
- "date":          14334,
-"stock": "COP",
-"weight":           0.01 
-},
-{
- "date":          14425,
-"stock": "COP",
-"weight":           0.01 
-},
-{
- "date":          14516,
-"stock": "COP",
-"weight":           0.01 
-},
-{
- "date":          14607,
-"stock": "COP",
-"weight":           0.01 
-},
-{
- "date":          14698,
-"stock": "COP",
-"weight":           0.01 
-},
-{
- "date":          14789,
-"stock": "COP",
-"weight":           0.01 
-},
-{
- "date":          14880,
-"stock": "COP",
-"weight":           0.01 
-},
-{
- "date":          14971,
-"stock": "COP",
-"weight":           0.01 
-},
-{
- "date":          12689,
-"stock": "AMGN",
-"weight":           0.01 
-},
-{
- "date":          12780,
-"stock": "AMGN",
-"weight":           0.01 
-},
-{
- "date":          12871,
-"stock": "AMGN",
-"weight":           0.01 
-},
-{
- "date":          12962,
-"stock": "AMGN",
-"weight":           0.01 
-},
-{
- "date":          13053,
-"stock": "AMGN",
-"weight":           0.01 
-},
-{
- "date":          13144,
-"stock": "AMGN",
-"weight":           0.01 
-},
-{
- "date":          13235,
-"stock": "AMGN",
-"weight":           0.01 
-},
-{
- "date":          13326,
-"stock": "AMGN",
-"weight":           0.01 
-},
-{
- "date":          13417,
-"stock": "AMGN",
-"weight":           0.01 
-},
-{
- "date":          13508,
-"stock": "AMGN",
-"weight":           0.01 
-},
-{
- "date":          13599,
-"stock": "AMGN",
-"weight":           0.01 
-},
-{
- "date":          13690,
-"stock": "AMGN",
-"weight":           0.01 
-},
-{
- "date":          13781,
-"stock": "AMGN",
-"weight": 0.03494781195121 
-},
-{
- "date":          13872,
-"stock": "AMGN",
-"weight":           0.01 
-},
-{
- "date":          13963,
-"stock": "AMGN",
-"weight":           0.01 
-},
-{
- "date":          14054,
-"stock": "AMGN",
-"weight": 0.02958501363921 
-},
-{
- "date":          14152,
-"stock": "AMGN",
-"weight": 0.03145655686124 
-},
-{
- "date":          14243,
-"stock": "AMGN",
-"weight": 0.02070593264746 
-},
-{
- "date":          14334,
-"stock": "AMGN",
-"weight": 0.02065078747452 
-},
-{
- "date":          14425,
-"stock": "AMGN",
-"weight": 0.02448584897708 
-},
-{
- "date":          14516,
-"stock": "AMGN",
-"weight": 0.02043038974062 
-},
-{
- "date":          14607,
-"stock": "AMGN",
-"weight": 0.01609427892282 
-},
-{
- "date":          14698,
-"stock": "AMGN",
-"weight": 0.018019153772 
-},
-{
- "date":          14789,
-"stock": "AMGN",
-"weight": 0.02297495360543 
-},
-{
- "date":          14880,
-"stock": "AMGN",
-"weight": 0.02208160215528 
-},
-{
- "date":          14971,
-"stock": "AMGN",
-"weight": 0.02056037993116 
-},
-{
- "date":          12689,
-"stock": "CVX",
-"weight": 0.08410619399406 
-},
-{
- "date":          12780,
-"stock": "CVX",
-"weight": 0.1229695322009 
-},
-{
- "date":          12871,
-"stock": "CVX",
-"weight": 0.01126358051852 
-},
-{
- "date":          12962,
-"stock": "CVX",
-"weight":           0.01 
-},
-{
- "date":          13053,
-"stock": "CVX",
-"weight":           0.01 
-},
-{
- "date":          13144,
-"stock": "CVX",
-"weight":           0.01 
-},
-{
- "date":          13235,
-"stock": "CVX",
-"weight":           0.01 
-},
-{
- "date":          13326,
-"stock": "CVX",
-"weight":           0.01 
-},
-{
- "date":          13417,
-"stock": "CVX",
-"weight":           0.01 
-},
-{
- "date":          13508,
-"stock": "CVX",
-"weight":           0.01 
-},
-{
- "date":          13599,
-"stock": "CVX",
-"weight":           0.01 
-},
-{
- "date":          13690,
-"stock": "CVX",
-"weight": 0.02102965626705 
-},
-{
- "date":          13781,
-"stock": "CVX",
-"weight": 0.07238278871078 
-},
-{
- "date":          13872,
-"stock": "CVX",
-"weight": 0.05861317034639 
-},
-{
- "date":          13963,
-"stock": "CVX",
-"weight": 0.06097080394255 
-},
-{
- "date":          14054,
-"stock": "CVX",
-"weight": 0.06169062435752 
-},
-{
- "date":          14152,
-"stock": "CVX",
-"weight": 0.07475986444108 
-},
-{
- "date":          14243,
-"stock": "CVX",
-"weight":           0.01 
-},
-{
- "date":          14334,
-"stock": "CVX",
-"weight":           0.01 
-},
-{
- "date":          14425,
-"stock": "CVX",
-"weight":           0.01 
-},
-{
- "date":          14516,
-"stock": "CVX",
-"weight":           0.01 
-},
-{
- "date":          14607,
-"stock": "CVX",
-"weight":           0.01 
-},
-{
- "date":          14698,
-"stock": "CVX",
-"weight":           0.01 
-},
-{
- "date":          14789,
-"stock": "CVX",
-"weight":           0.01 
-},
-{
- "date":          14880,
-"stock": "CVX",
-"weight":           0.01 
-},
-{
- "date":          14971,
-"stock": "CVX",
-"weight":           0.01 
-},
-{
- "date":          12689,
-"stock": "TROW",
-"weight":           0.01 
-},
-{
- "date":          12780,
-"stock": "TROW",
-"weight":           0.01 
-},
-{
- "date":          12871,
-"stock": "TROW",
-"weight":           0.01 
-},
-{
- "date":          12962,
-"stock": "TROW",
-"weight":           0.01 
-},
-{
- "date":          13053,
-"stock": "TROW",
-"weight":           0.01 
-},
-{
- "date":          13144,
-"stock": "TROW",
-"weight":           0.01 
-},
-{
- "date":          13235,
-"stock": "TROW",
-"weight":           0.01 
-},
-{
- "date":          13326,
-"stock": "TROW",
-"weight":           0.01 
-},
-{
- "date":          13417,
-"stock": "TROW",
-"weight":           0.01 
-},
-{
- "date":          13508,
-"stock": "TROW",
-"weight":           0.01 
-},
-{
- "date":          13599,
-"stock": "TROW",
-"weight":           0.01 
-},
-{
- "date":          13690,
-"stock": "TROW",
-"weight":           0.01 
-},
-{
- "date":          13781,
-"stock": "TROW",
-"weight":           0.01 
-},
-{
- "date":          13872,
-"stock": "TROW",
-"weight":           0.01 
-},
-{
- "date":          13963,
-"stock": "TROW",
-"weight":           0.01 
-},
-{
- "date":          14054,
-"stock": "TROW",
-"weight":           0.01 
-},
-{
- "date":          14152,
-"stock": "TROW",
-"weight":           0.01 
-},
-{
- "date":          14243,
-"stock": "TROW",
-"weight":           0.01 
-},
-{
- "date":          14334,
-"stock": "TROW",
-"weight":           0.01 
-},
-{
- "date":          14425,
-"stock": "TROW",
-"weight":           0.01 
-},
-{
- "date":          14516,
-"stock": "TROW",
-"weight":           0.01 
-},
-{
- "date":          14607,
-"stock": "TROW",
-"weight":           0.01 
-},
-{
- "date":          14698,
-"stock": "TROW",
-"weight":           0.01 
-},
-{
- "date":          14789,
-"stock": "TROW",
-"weight":           0.01 
-},
-{
- "date":          14880,
-"stock": "TROW",
-"weight":           0.01 
-},
-{
- "date":          14971,
-"stock": "TROW",
-"weight":           0.01 
-},
-{
- "date":          12689,
-"stock": "TECD",
-"weight":           0.01 
-},
-{
- "date":          12780,
-"stock": "TECD",
-"weight":           0.01 
-},
-{
- "date":          12871,
-"stock": "TECD",
-"weight":           0.01 
-},
-{
- "date":          12962,
-"stock": "TECD",
-"weight":           0.01 
-},
-{
- "date":          13053,
-"stock": "TECD",
-"weight":           0.01 
-},
-{
- "date":          13144,
-"stock": "TECD",
-"weight":           0.01 
-},
-{
- "date":          13235,
-"stock": "TECD",
-"weight":           0.01 
-},
-{
- "date":          13326,
-"stock": "TECD",
-"weight":           0.01 
-},
-{
- "date":          13417,
-"stock": "TECD",
-"weight":           0.01 
-},
-{
- "date":          13508,
-"stock": "TECD",
-"weight":           0.01 
-},
-{
- "date":          13599,
-"stock": "TECD",
-"weight":           0.01 
-},
-{
- "date":          13690,
-"stock": "TECD",
-"weight":           0.01 
-},
-{
- "date":          13781,
-"stock": "TECD",
-"weight":           0.01 
-},
-{
- "date":          13872,
-"stock": "TECD",
-"weight":           0.01 
-},
-{
- "date":          13963,
-"stock": "TECD",
-"weight":           0.01 
-},
-{
- "date":          14054,
-"stock": "TECD",
-"weight":           0.01 
-},
-{
- "date":          14152,
-"stock": "TECD",
-"weight":           0.01 
-},
-{
- "date":          14243,
-"stock": "TECD",
-"weight":           0.01 
-},
-{
- "date":          14334,
-"stock": "TECD",
-"weight":           0.01 
-},
-{
- "date":          14425,
-"stock": "TECD",
-"weight":           0.01 
-},
-{
- "date":          14516,
-"stock": "TECD",
-"weight":           0.01 
-},
-{
- "date":          14607,
-"stock": "TECD",
-"weight":           0.01 
-},
-{
- "date":          14698,
-"stock": "TECD",
-"weight":           0.01 
-},
-{
- "date":          14789,
-"stock": "TECD",
-"weight":           0.01 
-},
-{
- "date":          14880,
-"stock": "TECD",
-"weight":           0.01 
-},
-{
- "date":          14971,
-"stock": "TECD",
-"weight":           0.01 
-},
-{
- "date":          12689,
-"stock": "FO",
-"weight": 0.04190480679653 
-},
-{
- "date":          12780,
-"stock": "FO",
-"weight": 0.05136331818314 
-},
-{
- "date":          12871,
-"stock": "FO",
-"weight": 0.08871427381241 
-},
-{
- "date":          12962,
-"stock": "FO",
-"weight": 0.09690282901717 
-},
-{
- "date":          13053,
-"stock": "FO",
-"weight": 0.1253087126105 
-},
-{
- "date":          13144,
-"stock": "FO",
-"weight": 0.1050514108237 
-},
-{
- "date":          13235,
-"stock": "FO",
-"weight": 0.1053788883738 
-},
-{
- "date":          13326,
-"stock": "FO",
-"weight": 0.08897219103557 
-},
-{
- "date":          13417,
-"stock": "FO",
-"weight": 0.09693357869416 
-},
-{
- "date":          13508,
-"stock": "FO",
-"weight": 0.101102777532 
-},
-{
- "date":          13599,
-"stock": "FO",
-"weight": 0.09351727426068 
-},
-{
- "date":          13690,
-"stock": "FO",
-"weight": 0.07405624237916 
-},
-{
- "date":          13781,
-"stock": "FO",
-"weight": 0.01132373461694 
-},
-{
- "date":          13872,
-"stock": "FO",
-"weight": 0.0162339498082 
-},
-{
- "date":          13963,
-"stock": "FO",
-"weight":           0.01 
-},
-{
- "date":          14054,
-"stock": "FO",
-"weight":           0.01 
-},
-{
- "date":          14152,
-"stock": "FO",
-"weight":           0.01 
-},
-{
- "date":          14243,
-"stock": "FO",
-"weight":           0.01 
-},
-{
- "date":          14334,
-"stock": "FO",
-"weight":           0.01 
-},
-{
- "date":          14425,
-"stock": "FO",
-"weight":           0.01 
-},
-{
- "date":          14516,
-"stock": "FO",
-"weight":           0.01 
-},
-{
- "date":          14607,
-"stock": "FO",
-"weight":           0.01 
-},
-{
- "date":          14698,
-"stock": "FO",
-"weight":           0.01 
-},
-{
- "date":          14789,
-"stock": "FO",
-"weight":           0.01 
-},
-{
- "date":          14880,
-"stock": "FO",
-"weight":           0.01 
-},
-{
- "date":          14971,
-"stock": "FO",
-"weight":           0.01 
-},
-{
- "date":          12689,
-"stock": "TCB",
-"weight":           0.01 
-},
-{
- "date":          12780,
-"stock": "TCB",
-"weight":           0.01 
-},
-{
- "date":          12871,
-"stock": "TCB",
-"weight":           0.01 
-},
-{
- "date":          12962,
-"stock": "TCB",
-"weight":           0.01 
-},
-{
- "date":          13053,
-"stock": "TCB",
-"weight":           0.01 
-},
-{
- "date":          13144,
-"stock": "TCB",
-"weight":           0.01 
-},
-{
- "date":          13235,
-"stock": "TCB",
-"weight":           0.01 
-},
-{
- "date":          13326,
-"stock": "TCB",
-"weight":           0.01 
-},
-{
- "date":          13417,
-"stock": "TCB",
-"weight":           0.01 
-},
-{
- "date":          13508,
-"stock": "TCB",
-"weight":           0.01 
-},
-{
- "date":          13599,
-"stock": "TCB",
-"weight":           0.01 
-},
-{
- "date":          13690,
-"stock": "TCB",
-"weight":           0.01 
-},
-{
- "date":          13781,
-"stock": "TCB",
-"weight":           0.01 
-},
-{
- "date":          13872,
-"stock": "TCB",
-"weight":           0.01 
-},
-{
- "date":          13963,
-"stock": "TCB",
-"weight":           0.01 
-},
-{
- "date":          14054,
-"stock": "TCB",
-"weight":           0.01 
-},
-{
- "date":          14152,
-"stock": "TCB",
-"weight":           0.01 
-},
-{
- "date":          14243,
-"stock": "TCB",
-"weight":           0.01 
-},
-{
- "date":          14334,
-"stock": "TCB",
-"weight":           0.01 
-},
-{
- "date":          14425,
-"stock": "TCB",
-"weight":           0.01 
-},
-{
- "date":          14516,
-"stock": "TCB",
-"weight":           0.01 
-},
-{
- "date":          14607,
-"stock": "TCB",
-"weight":           0.01 
-},
-{
- "date":          14698,
-"stock": "TCB",
-"weight":           0.01 
-},
-{
- "date":          14789,
-"stock": "TCB",
-"weight":           0.01 
-},
-{
- "date":          14880,
-"stock": "TCB",
-"weight":           0.01 
-},
-{
- "date":          14971,
-"stock": "TCB",
-"weight":           0.01 
-},
-{
- "date":          12689,
-"stock": "FISV",
-"weight":           0.01 
-},
-{
- "date":          12780,
-"stock": "FISV",
-"weight":           0.01 
-},
-{
- "date":          12871,
-"stock": "FISV",
-"weight":           0.01 
-},
-{
- "date":          12962,
-"stock": "FISV",
-"weight":           0.01 
-},
-{
- "date":          13053,
-"stock": "FISV",
-"weight":           0.01 
-},
-{
- "date":          13144,
-"stock": "FISV",
-"weight":           0.01 
-},
-{
- "date":          13235,
-"stock": "FISV",
-"weight":           0.01 
-},
-{
- "date":          13326,
-"stock": "FISV",
-"weight":           0.01 
-},
-{
- "date":          13417,
-"stock": "FISV",
-"weight":           0.01 
-},
-{
- "date":          13508,
-"stock": "FISV",
-"weight":           0.01 
-},
-{
- "date":          13599,
-"stock": "FISV",
-"weight":           0.01 
-},
-{
- "date":          13690,
-"stock": "FISV",
-"weight":           0.01 
-},
-{
- "date":          13781,
-"stock": "FISV",
-"weight":           0.01 
-},
-{
- "date":          13872,
-"stock": "FISV",
-"weight":           0.01 
-},
-{
- "date":          13963,
-"stock": "FISV",
-"weight":           0.01 
-},
-{
- "date":          14054,
-"stock": "FISV",
-"weight":           0.01 
-},
-{
- "date":          14152,
-"stock": "FISV",
-"weight":           0.01 
-},
-{
- "date":          14243,
-"stock": "FISV",
-"weight":           0.01 
-},
-{
- "date":          14334,
-"stock": "FISV",
-"weight":           0.01 
-},
-{
- "date":          14425,
-"stock": "FISV",
-"weight":           0.01 
-},
-{
- "date":          14516,
-"stock": "FISV",
-"weight":           0.01 
-},
-{
- "date":          14607,
-"stock": "FISV",
-"weight":           0.01 
-},
-{
- "date":          14698,
-"stock": "FISV",
-"weight":           0.01 
-},
-{
- "date":          14789,
-"stock": "FISV",
-"weight":           0.01 
-},
-{
- "date":          14880,
-"stock": "FISV",
-"weight":           0.01 
-},
-{
- "date":          14971,
-"stock": "FISV",
-"weight":           0.01 
-},
-{
- "date":          12689,
-"stock": "CDNS",
-"weight":           0.01 
-},
-{
- "date":          12780,
-"stock": "CDNS",
-"weight":           0.01 
-},
-{
- "date":          12871,
-"stock": "CDNS",
-"weight":           0.01 
-},
-{
- "date":          12962,
-"stock": "CDNS",
-"weight":           0.01 
-},
-{
- "date":          13053,
-"stock": "CDNS",
-"weight":           0.01 
-},
-{
- "date":          13144,
-"stock": "CDNS",
-"weight":           0.01 
-},
-{
- "date":          13235,
-"stock": "CDNS",
-"weight":           0.01 
-},
-{
- "date":          13326,
-"stock": "CDNS",
-"weight":           0.01 
-},
-{
- "date":          13417,
-"stock": "CDNS",
-"weight":           0.01 
-},
-{
- "date":          13508,
-"stock": "CDNS",
-"weight":           0.01 
-},
-{
- "date":          13599,
-"stock": "CDNS",
-"weight":           0.01 
-},
-{
- "date":          13690,
-"stock": "CDNS",
-"weight":           0.01 
-},
-{
- "date":          13781,
-"stock": "CDNS",
-"weight":           0.01 
-},
-{
- "date":          13872,
-"stock": "CDNS",
-"weight":           0.01 
-},
-{
- "date":          13963,
-"stock": "CDNS",
-"weight":           0.01 
-},
-{
- "date":          14054,
-"stock": "CDNS",
-"weight":           0.01 
-},
-{
- "date":          14152,
-"stock": "CDNS",
-"weight":           0.01 
-},
-{
- "date":          14243,
-"stock": "CDNS",
-"weight":           0.01 
-},
-{
- "date":          14334,
-"stock": "CDNS",
-"weight":           0.01 
-},
-{
- "date":          14425,
-"stock": "CDNS",
-"weight":           0.01 
-},
-{
- "date":          14516,
-"stock": "CDNS",
-"weight":           0.01 
-},
-{
- "date":          14607,
-"stock": "CDNS",
-"weight":           0.01 
-},
-{
- "date":          14698,
-"stock": "CDNS",
-"weight":           0.01 
-},
-{
- "date":          14789,
-"stock": "CDNS",
-"weight":           0.01 
-},
-{
- "date":          14880,
-"stock": "CDNS",
-"weight":           0.01 
-},
-{
- "date":          14971,
-"stock": "CDNS",
-"weight":           0.01 
-},
-{
- "date":          12689,
-"stock": "XRAY",
-"weight": 0.09975566555437 
-},
-{
- "date":          12780,
-"stock": "XRAY",
-"weight": 0.07700405466497 
-},
-{
- "date":          12871,
-"stock": "XRAY",
-"weight": 0.08055400263437 
-},
-{
- "date":          12962,
-"stock": "XRAY",
-"weight": 0.07624095602137 
-},
-{
- "date":          13053,
-"stock": "XRAY",
-"weight": 0.06870210251847 
-},
-{
- "date":          13144,
-"stock": "XRAY",
-"weight": 0.06527192109021 
-},
-{
- "date":          13235,
-"stock": "XRAY",
-"weight": 0.06327210323596 
-},
-{
- "date":          13326,
-"stock": "XRAY",
-"weight": 0.06741290214316 
-},
-{
- "date":          13417,
-"stock": "XRAY",
-"weight": 0.1023108000064 
-},
-{
- "date":          13508,
-"stock": "XRAY",
-"weight": 0.08999917360498 
-},
-{
- "date":          13599,
-"stock": "XRAY",
-"weight": 0.08882781886791 
-},
-{
- "date":          13690,
-"stock": "XRAY",
-"weight": 0.0681593237495 
-},
-{
- "date":          13781,
-"stock": "XRAY",
-"weight": 0.0422987868314 
-},
-{
- "date":          13872,
-"stock": "XRAY",
-"weight": 0.02739613259405 
-},
-{
- "date":          13963,
-"stock": "XRAY",
-"weight": 0.03178546265803 
-},
-{
- "date":          14054,
-"stock": "XRAY",
-"weight": 0.03129177624332 
-},
-{
- "date":          14152,
-"stock": "XRAY",
-"weight": 0.02590357664168 
-},
-{
- "date":          14243,
-"stock": "XRAY",
-"weight":           0.01 
-},
-{
- "date":          14334,
-"stock": "XRAY",
-"weight":           0.01 
-},
-{
- "date":          14425,
-"stock": "XRAY",
-"weight":           0.01 
-},
-{
- "date":          14516,
-"stock": "XRAY",
-"weight":           0.01 
-},
-{
- "date":          14607,
-"stock": "XRAY",
-"weight":           0.01 
-},
-{
- "date":          14698,
-"stock": "XRAY",
-"weight":           0.01 
-},
-{
- "date":          14789,
-"stock": "XRAY",
-"weight":           0.01 
-},
-{
- "date":          14880,
-"stock": "XRAY",
-"weight":           0.01 
-},
-{
- "date":          14971,
-"stock": "XRAY",
-"weight":           0.01 
-},
-{
- "date":          12689,
-"stock": "FAST",
-"weight":           0.01 
-},
-{
- "date":          12780,
-"stock": "FAST",
-"weight":           0.01 
-},
-{
- "date":          12871,
-"stock": "FAST",
-"weight":           0.01 
-},
-{
- "date":          12962,
-"stock": "FAST",
-"weight":           0.01 
-},
-{
- "date":          13053,
-"stock": "FAST",
-"weight":           0.01 
-},
-{
- "date":          13144,
-"stock": "FAST",
-"weight":           0.01 
-},
-{
- "date":          13235,
-"stock": "FAST",
-"weight":           0.01 
-},
-{
- "date":          13326,
-"stock": "FAST",
-"weight":           0.01 
-},
-{
- "date":          13417,
-"stock": "FAST",
-"weight":           0.01 
-},
-{
- "date":          13508,
-"stock": "FAST",
-"weight":           0.01 
-},
-{
- "date":          13599,
-"stock": "FAST",
-"weight":           0.01 
-},
-{
- "date":          13690,
-"stock": "FAST",
-"weight":           0.01 
-},
-{
- "date":          13781,
-"stock": "FAST",
-"weight":           0.01 
-},
-{
- "date":          13872,
-"stock": "FAST",
-"weight":           0.01 
-},
-{
- "date":          13963,
-"stock": "FAST",
-"weight":           0.01 
-},
-{
- "date":          14054,
-"stock": "FAST",
-"weight":           0.01 
-},
-{
- "date":          14152,
-"stock": "FAST",
-"weight":           0.01 
-},
-{
- "date":          14243,
-"stock": "FAST",
-"weight":           0.01 
-},
-{
- "date":          14334,
-"stock": "FAST",
-"weight":           0.01 
-},
-{
- "date":          14425,
-"stock": "FAST",
-"weight":           0.01 
-},
-{
- "date":          14516,
-"stock": "FAST",
-"weight":           0.01 
-},
-{
- "date":          14607,
-"stock": "FAST",
-"weight":           0.01 
-},
-{
- "date":          14698,
-"stock": "FAST",
-"weight":           0.01 
-},
-{
- "date":          14789,
-"stock": "FAST",
-"weight":           0.01 
-},
-{
- "date":          14880,
-"stock": "FAST",
-"weight":           0.01 
-},
-{
- "date":          14971,
-"stock": "FAST",
-"weight":           0.01 
-},
-{
- "date":          12689,
-"stock": "DTE",
-"weight": 0.1816938290508 
-},
-{
- "date":          12780,
-"stock": "DTE",
-"weight": 0.2111002517203 
-},
-{
- "date":          12871,
-"stock": "DTE",
-"weight": 0.1846319043165 
-},
-{
- "date":          12962,
-"stock": "DTE",
-"weight": 0.1893508080557 
-},
-{
- "date":          13053,
-"stock": "DTE",
-"weight": 0.1895652549755 
-},
-{
- "date":          13144,
-"stock": "DTE",
-"weight": 0.2240248210106 
-},
-{
- "date":          13235,
-"stock": "DTE",
-"weight": 0.2152617374576 
-},
-{
- "date":          13326,
-"stock": "DTE",
-"weight": 0.1980460584994 
-},
-{
- "date":          13417,
-"stock": "DTE",
-"weight": 0.1798938989997 
-},
-{
- "date":          13508,
-"stock": "DTE",
-"weight": 0.1800654556638 
-},
-{
- "date":          13599,
-"stock": "DTE",
-"weight": 0.1607124266192 
-},
-{
- "date":          13690,
-"stock": "DTE",
-"weight": 0.1865517955673 
-},
-{
- "date":          13781,
-"stock": "DTE",
-"weight": 0.1166799423159 
-},
-{
- "date":          13872,
-"stock": "DTE",
-"weight": 0.102193802987 
-},
-{
- "date":          13963,
-"stock": "DTE",
-"weight": 0.1225623385751 
-},
-{
- "date":          14054,
-"stock": "DTE",
-"weight": 0.1378727557877 
-},
-{
- "date":          14152,
-"stock": "DTE",
-"weight": 0.1285601346566 
-},
-{
- "date":          14243,
-"stock": "DTE",
-"weight": 0.1224114426103 
-},
-{
- "date":          14334,
-"stock": "DTE",
-"weight":           0.01 
-},
-{
- "date":          14425,
-"stock": "DTE",
-"weight":           0.01 
-},
-{
- "date":          14516,
-"stock": "DTE",
-"weight":           0.01 
-},
-{
- "date":          14607,
-"stock": "DTE",
-"weight":           0.01 
-},
-{
- "date":          14698,
-"stock": "DTE",
-"weight":           0.01 
-},
-{
- "date":          14789,
-"stock": "DTE",
-"weight":           0.01 
-},
-{
- "date":          14880,
-"stock": "DTE",
-"weight":           0.01 
-},
-{
- "date":          14971,
-"stock": "DTE",
-"weight":           0.01 
-},
-{
- "date":          12689,
-"stock": "ETN",
-"weight":           0.01 
-},
-{
- "date":          12780,
-"stock": "ETN",
-"weight":           0.01 
-},
-{
- "date":          12871,
-"stock": "ETN",
-"weight":           0.01 
-},
-{
- "date":          12962,
-"stock": "ETN",
-"weight":           0.01 
-},
-{
- "date":          13053,
-"stock": "ETN",
-"weight":           0.01 
-},
-{
- "date":          13144,
-"stock": "ETN",
-"weight":           0.01 
-},
-{
- "date":          13235,
-"stock": "ETN",
-"weight":           0.01 
-},
-{
- "date":          13326,
-"stock": "ETN",
-"weight":           0.01 
-},
-{
- "date":          13417,
-"stock": "ETN",
-"weight":           0.01 
-},
-{
- "date":          13508,
-"stock": "ETN",
-"weight":           0.01 
-},
-{
- "date":          13599,
-"stock": "ETN",
-"weight":           0.01 
-},
-{
- "date":          13690,
-"stock": "ETN",
-"weight":           0.01 
-},
-{
- "date":          13781,
-"stock": "ETN",
-"weight":           0.01 
-},
-{
- "date":          13872,
-"stock": "ETN",
-"weight":           0.01 
-},
-{
- "date":          13963,
-"stock": "ETN",
-"weight":           0.01 
-},
-{
- "date":          14054,
-"stock": "ETN",
-"weight":           0.01 
-},
-{
- "date":          14152,
-"stock": "ETN",
-"weight":           0.01 
-},
-{
- "date":          14243,
-"stock": "ETN",
-"weight":           0.01 
-},
-{
- "date":          14334,
-"stock": "ETN",
-"weight":           0.01 
-},
-{
- "date":          14425,
-"stock": "ETN",
-"weight":           0.01 
-},
-{
- "date":          14516,
-"stock": "ETN",
-"weight":           0.01 
-},
-{
- "date":          14607,
-"stock": "ETN",
-"weight":           0.01 
-},
-{
- "date":          14698,
-"stock": "ETN",
-"weight":           0.01 
-},
-{
- "date":          14789,
-"stock": "ETN",
-"weight":           0.01 
-},
-{
- "date":          14880,
-"stock": "ETN",
-"weight":           0.01 
-},
-{
- "date":          14971,
-"stock": "ETN",
-"weight":           0.01 
-},
-{
- "date":          12689,
-"stock": "NVLS",
-"weight":           0.01 
-},
-{
- "date":          12780,
-"stock": "NVLS",
-"weight":           0.01 
-},
-{
- "date":          12871,
-"stock": "NVLS",
-"weight":           0.01 
-},
-{
- "date":          12962,
-"stock": "NVLS",
-"weight":           0.01 
-},
-{
- "date":          13053,
-"stock": "NVLS",
-"weight":           0.01 
-},
-{
- "date":          13144,
-"stock": "NVLS",
-"weight":           0.01 
-},
-{
- "date":          13235,
-"stock": "NVLS",
-"weight":           0.01 
-},
-{
- "date":          13326,
-"stock": "NVLS",
-"weight":           0.01 
-},
-{
- "date":          13417,
-"stock": "NVLS",
-"weight":           0.01 
-},
-{
- "date":          13508,
-"stock": "NVLS",
-"weight":           0.01 
-},
-{
- "date":          13599,
-"stock": "NVLS",
-"weight":           0.01 
-},
-{
- "date":          13690,
-"stock": "NVLS",
-"weight":           0.01 
-},
-{
- "date":          13781,
-"stock": "NVLS",
-"weight":           0.01 
-},
-{
- "date":          13872,
-"stock": "NVLS",
-"weight":           0.01 
-},
-{
- "date":          13963,
-"stock": "NVLS",
-"weight":           0.01 
-},
-{
- "date":          14054,
-"stock": "NVLS",
-"weight":           0.01 
-},
-{
- "date":          14152,
-"stock": "NVLS",
-"weight":           0.01 
-},
-{
- "date":          14243,
-"stock": "NVLS",
-"weight":           0.01 
-},
-{
- "date":          14334,
-"stock": "NVLS",
-"weight":           0.01 
-},
-{
- "date":          14425,
-"stock": "NVLS",
-"weight":           0.01 
-},
-{
- "date":          14516,
-"stock": "NVLS",
-"weight":           0.01 
-},
-{
- "date":          14607,
-"stock": "NVLS",
-"weight":           0.01 
-},
-{
- "date":          14698,
-"stock": "NVLS",
-"weight":           0.01 
-},
-{
- "date":          14789,
-"stock": "NVLS",
-"weight":           0.01 
-},
-{
- "date":          14880,
-"stock": "NVLS",
-"weight":           0.01 
-},
-{
- "date":          14971,
-"stock": "NVLS",
-"weight":           0.01 
-},
-{
- "date":          12689,
-"stock": "GR",
-"weight":           0.01 
-},
-{
- "date":          12780,
-"stock": "GR",
-"weight":           0.01 
-},
-{
- "date":          12871,
-"stock": "GR",
-"weight":           0.01 
-},
-{
- "date":          12962,
-"stock": "GR",
-"weight":           0.01 
-},
-{
- "date":          13053,
-"stock": "GR",
-"weight":           0.01 
-},
-{
- "date":          13144,
-"stock": "GR",
-"weight":           0.01 
-},
-{
- "date":          13235,
-"stock": "GR",
-"weight":           0.01 
-},
-{
- "date":          13326,
-"stock": "GR",
-"weight":           0.01 
-},
-{
- "date":          13417,
-"stock": "GR",
-"weight":           0.01 
-},
-{
- "date":          13508,
-"stock": "GR",
-"weight":           0.01 
-},
-{
- "date":          13599,
-"stock": "GR",
-"weight":           0.01 
-},
-{
- "date":          13690,
-"stock": "GR",
-"weight":           0.01 
-},
-{
- "date":          13781,
-"stock": "GR",
-"weight":           0.01 
-},
-{
- "date":          13872,
-"stock": "GR",
-"weight":           0.01 
-},
-{
- "date":          13963,
-"stock": "GR",
-"weight":           0.01 
-},
-{
- "date":          14054,
-"stock": "GR",
-"weight":           0.01 
-},
-{
- "date":          14152,
-"stock": "GR",
-"weight":           0.01 
-},
-{
- "date":          14243,
-"stock": "GR",
-"weight":           0.01 
-},
-{
- "date":          14334,
-"stock": "GR",
-"weight":           0.01 
-},
-{
- "date":          14425,
-"stock": "GR",
-"weight":           0.01 
-},
-{
- "date":          14516,
-"stock": "GR",
-"weight":           0.01 
-},
-{
- "date":          14607,
-"stock": "GR",
-"weight":           0.01 
-},
-{
- "date":          14698,
-"stock": "GR",
-"weight":           0.01 
-},
-{
- "date":          14789,
-"stock": "GR",
-"weight":           0.01 
-},
-{
- "date":          14880,
-"stock": "GR",
-"weight":           0.01 
-},
-{
- "date":          14971,
-"stock": "GR",
-"weight":           0.01 
-},
-{
- "date":          12689,
-"stock": "ITT",
-"weight":           0.01 
-},
-{
- "date":          12780,
-"stock": "ITT",
-"weight":           0.01 
-},
-{
- "date":          12871,
-"stock": "ITT",
-"weight":           0.01 
-},
-{
- "date":          12962,
-"stock": "ITT",
-"weight":           0.01 
-},
-{
- "date":          13053,
-"stock": "ITT",
-"weight":           0.01 
-},
-{
- "date":          13144,
-"stock": "ITT",
-"weight":           0.01 
-},
-{
- "date":          13235,
-"stock": "ITT",
-"weight":           0.01 
-},
-{
- "date":          13326,
-"stock": "ITT",
-"weight":           0.01 
-},
-{
- "date":          13417,
-"stock": "ITT",
-"weight":           0.01 
-},
-{
- "date":          13508,
-"stock": "ITT",
-"weight":           0.01 
-},
-{
- "date":          13599,
-"stock": "ITT",
-"weight":           0.01 
-},
-{
- "date":          13690,
-"stock": "ITT",
-"weight":           0.01 
-},
-{
- "date":          13781,
-"stock": "ITT",
-"weight":           0.01 
-},
-{
- "date":          13872,
-"stock": "ITT",
-"weight":           0.01 
-},
-{
- "date":          13963,
-"stock": "ITT",
-"weight":           0.01 
-},
-{
- "date":          14054,
-"stock": "ITT",
-"weight":           0.01 
-},
-{
- "date":          14152,
-"stock": "ITT",
-"weight":           0.01 
-},
-{
- "date":          14243,
-"stock": "ITT",
-"weight":           0.01 
-},
-{
- "date":          14334,
-"stock": "ITT",
-"weight":           0.01 
-},
-{
- "date":          14425,
-"stock": "ITT",
-"weight":           0.01 
-},
-{
- "date":          14516,
-"stock": "ITT",
-"weight":           0.01 
-},
-{
- "date":          14607,
-"stock": "ITT",
-"weight":           0.01 
-},
-{
- "date":          14698,
-"stock": "ITT",
-"weight":           0.01 
-},
-{
- "date":          14789,
-"stock": "ITT",
-"weight":           0.01 
-},
-{
- "date":          14880,
-"stock": "ITT",
-"weight":           0.01 
-},
-{
- "date":          14971,
-"stock": "ITT",
-"weight":           0.01 
-},
-{
- "date":          12689,
-"stock": "VMC",
-"weight":           0.01 
-},
-{
- "date":          12780,
-"stock": "VMC",
-"weight":           0.01 
-},
-{
- "date":          12871,
-"stock": "VMC",
-"weight":           0.01 
-},
-{
- "date":          12962,
-"stock": "VMC",
-"weight":           0.01 
-},
-{
- "date":          13053,
-"stock": "VMC",
-"weight":           0.01 
-},
-{
- "date":          13144,
-"stock": "VMC",
-"weight":           0.01 
-},
-{
- "date":          13235,
-"stock": "VMC",
-"weight":           0.01 
-},
-{
- "date":          13326,
-"stock": "VMC",
-"weight":           0.01 
-},
-{
- "date":          13417,
-"stock": "VMC",
-"weight":           0.01 
-},
-{
- "date":          13508,
-"stock": "VMC",
-"weight":           0.01 
-},
-{
- "date":          13599,
-"stock": "VMC",
-"weight":           0.01 
-},
-{
- "date":          13690,
-"stock": "VMC",
-"weight":           0.01 
-},
-{
- "date":          13781,
-"stock": "VMC",
-"weight":           0.01 
-},
-{
- "date":          13872,
-"stock": "VMC",
-"weight":           0.01 
-},
-{
- "date":          13963,
-"stock": "VMC",
-"weight":           0.01 
-},
-{
- "date":          14054,
-"stock": "VMC",
-"weight":           0.01 
-},
-{
- "date":          14152,
-"stock": "VMC",
-"weight":           0.01 
-},
-{
- "date":          14243,
-"stock": "VMC",
-"weight":           0.01 
-},
-{
- "date":          14334,
-"stock": "VMC",
-"weight":           0.01 
-},
-{
- "date":          14425,
-"stock": "VMC",
-"weight":           0.01 
-},
-{
- "date":          14516,
-"stock": "VMC",
-"weight":           0.01 
-},
-{
- "date":          14607,
-"stock": "VMC",
-"weight":           0.01 
-},
-{
- "date":          14698,
-"stock": "VMC",
-"weight":           0.01 
-},
-{
- "date":          14789,
-"stock": "VMC",
-"weight":           0.01 
-},
-{
- "date":          14880,
-"stock": "VMC",
-"weight":           0.01 
-},
-{
- "date":          14971,
-"stock": "VMC",
-"weight":           0.01 
-},
-{
- "date":          12689,
-"stock": "ASBC",
-"weight":           0.01 
-},
-{
- "date":          12780,
-"stock": "ASBC",
-"weight":           0.01 
-},
-{
- "date":          12871,
-"stock": "ASBC",
-"weight":           0.01 
-},
-{
- "date":          12962,
-"stock": "ASBC",
-"weight":           0.01 
-},
-{
- "date":          13053,
-"stock": "ASBC",
-"weight":           0.01 
-},
-{
- "date":          13144,
-"stock": "ASBC",
-"weight":           0.01 
-},
-{
- "date":          13235,
-"stock": "ASBC",
-"weight":           0.01 
-},
-{
- "date":          13326,
-"stock": "ASBC",
-"weight":           0.01 
-},
-{
- "date":          13417,
-"stock": "ASBC",
-"weight":           0.01 
-},
-{
- "date":          13508,
-"stock": "ASBC",
-"weight":           0.01 
-},
-{
- "date":          13599,
-"stock": "ASBC",
-"weight":           0.01 
-},
-{
- "date":          13690,
-"stock": "ASBC",
-"weight": 0.04119365352739 
-},
-{
- "date":          13781,
-"stock": "ASBC",
-"weight": 0.09267940183076 
-},
-{
- "date":          13872,
-"stock": "ASBC",
-"weight": 0.0403334639719 
-},
-{
- "date":          13963,
-"stock": "ASBC",
-"weight":           0.01 
-},
-{
- "date":          14054,
-"stock": "ASBC",
-"weight":           0.01 
-},
-{
- "date":          14152,
-"stock": "ASBC",
-"weight":           0.01 
-},
-{
- "date":          14243,
-"stock": "ASBC",
-"weight":           0.01 
-},
-{
- "date":          14334,
-"stock": "ASBC",
-"weight":           0.01 
-},
-{
- "date":          14425,
-"stock": "ASBC",
-"weight":           0.01 
-},
-{
- "date":          14516,
-"stock": "ASBC",
-"weight":           0.01 
-},
-{
- "date":          14607,
-"stock": "ASBC",
-"weight":           0.01 
-},
-{
- "date":          14698,
-"stock": "ASBC",
-"weight":           0.01 
-},
-{
- "date":          14789,
-"stock": "ASBC",
-"weight":           0.01 
-},
-{
- "date":          14880,
-"stock": "ASBC",
-"weight":           0.01 
-},
-{
- "date":          14971,
-"stock": "ASBC",
-"weight":           0.01 
-},
-{
- "date":          12689,
-"stock": "PLXS",
-"weight":           0.01 
-},
-{
- "date":          12780,
-"stock": "PLXS",
-"weight":           0.01 
-},
-{
- "date":          12871,
-"stock": "PLXS",
-"weight":           0.01 
-},
-{
- "date":          12962,
-"stock": "PLXS",
-"weight":           0.01 
-},
-{
- "date":          13053,
-"stock": "PLXS",
-"weight":           0.01 
-},
-{
- "date":          13144,
-"stock": "PLXS",
-"weight":           0.01 
-},
-{
- "date":          13235,
-"stock": "PLXS",
-"weight":           0.01 
-},
-{
- "date":          13326,
-"stock": "PLXS",
-"weight":           0.01 
-},
-{
- "date":          13417,
-"stock": "PLXS",
-"weight":           0.01 
-},
-{
- "date":          13508,
-"stock": "PLXS",
-"weight":           0.01 
-},
-{
- "date":          13599,
-"stock": "PLXS",
-"weight":           0.01 
-},
-{
- "date":          13690,
-"stock": "PLXS",
-"weight":           0.01 
-},
-{
- "date":          13781,
-"stock": "PLXS",
-"weight":           0.01 
-},
-{
- "date":          13872,
-"stock": "PLXS",
-"weight":           0.01 
-},
-{
- "date":          13963,
-"stock": "PLXS",
-"weight":           0.01 
-},
-{
- "date":          14054,
-"stock": "PLXS",
-"weight":           0.01 
-},
-{
- "date":          14152,
-"stock": "PLXS",
-"weight":           0.01 
-},
-{
- "date":          14243,
-"stock": "PLXS",
-"weight":           0.01 
-},
-{
- "date":          14334,
-"stock": "PLXS",
-"weight":           0.01 
-},
-{
- "date":          14425,
-"stock": "PLXS",
-"weight":           0.01 
-},
-{
- "date":          14516,
-"stock": "PLXS",
-"weight":           0.01 
-},
-{
- "date":          14607,
-"stock": "PLXS",
-"weight":           0.01 
-},
-{
- "date":          14698,
-"stock": "PLXS",
-"weight":           0.01 
-},
-{
- "date":          14789,
-"stock": "PLXS",
-"weight":           0.01 
-},
-{
- "date":          14880,
-"stock": "PLXS",
-"weight":           0.01 
-},
-{
- "date":          14971,
-"stock": "PLXS",
-"weight":           0.01 
-},
-{
- "date":          12689,
-"stock": "BWINB",
-"weight": 0.02518602233558 
-},
-{
- "date":          12780,
-"stock": "BWINB",
-"weight": 0.04107409735676 
-},
-{
- "date":          12871,
-"stock": "BWINB",
-"weight": 0.01389872811072 
-},
-{
- "date":          12962,
-"stock": "BWINB",
-"weight": 0.01526123294828 
-},
-{
- "date":          13053,
-"stock": "BWINB",
-"weight": 0.0140905717961 
-},
-{
- "date":          13144,
-"stock": "BWINB",
-"weight":           0.01 
-},
-{
- "date":          13235,
-"stock": "BWINB",
-"weight": 0.01336932571873 
-},
-{
- "date":          13326,
-"stock": "BWINB",
-"weight": 0.02413528100816 
-},
-{
- "date":          13417,
-"stock": "BWINB",
-"weight": 0.04197785333751 
-},
-{
- "date":          13508,
-"stock": "BWINB",
-"weight": 0.05108633274701 
-},
-{
- "date":          13599,
-"stock": "BWINB",
-"weight": 0.07333384031933 
-},
-{
- "date":          13690,
-"stock": "BWINB",
-"weight": 0.01039386574167 
-},
-{
- "date":          13781,
-"stock": "BWINB",
-"weight":           0.01 
-},
-{
- "date":          13872,
-"stock": "BWINB",
-"weight":           0.01 
-},
-{
- "date":          13963,
-"stock": "BWINB",
-"weight":           0.01 
-},
-{
- "date":          14054,
-"stock": "BWINB",
-"weight": 0.01926388273421 
-},
-{
- "date":          14152,
-"stock": "BWINB",
-"weight": 0.02937515822817 
-},
-{
- "date":          14243,
-"stock": "BWINB",
-"weight": 0.02355224033102 
-},
-{
- "date":          14334,
-"stock": "BWINB",
-"weight":           0.01 
-},
-{
- "date":          14425,
-"stock": "BWINB",
-"weight":           0.01 
-},
-{
- "date":          14516,
-"stock": "BWINB",
-"weight":           0.01 
-},
-{
- "date":          14607,
-"stock": "BWINB",
-"weight":           0.01 
-},
-{
- "date":          14698,
-"stock": "BWINB",
-"weight":           0.01 
-},
-{
- "date":          14789,
-"stock": "BWINB",
-"weight":           0.01 
-},
-{
- "date":          14880,
-"stock": "BWINB",
-"weight":           0.01 
-},
-{
- "date":          14971,
-"stock": "BWINB",
-"weight":           0.01 
-},
-{
- "date":          12689,
-"stock": "HGIC",
-"weight":           0.01 
-},
-{
- "date":          12780,
-"stock": "HGIC",
-"weight":           0.01 
-},
-{
- "date":          12871,
-"stock": "HGIC",
-"weight":           0.01 
-},
-{
- "date":          12962,
-"stock": "HGIC",
-"weight":           0.01 
-},
-{
- "date":          13053,
-"stock": "HGIC",
-"weight":           0.01 
-},
-{
- "date":          13144,
-"stock": "HGIC",
-"weight":           0.01 
-},
-{
- "date":          13235,
-"stock": "HGIC",
-"weight":           0.01 
-},
-{
- "date":          13326,
-"stock": "HGIC",
-"weight":           0.01 
-},
-{
- "date":          13417,
-"stock": "HGIC",
-"weight":           0.01 
-},
-{
- "date":          13508,
-"stock": "HGIC",
-"weight":           0.01 
-},
-{
- "date":          13599,
-"stock": "HGIC",
-"weight":           0.01 
-},
-{
- "date":          13690,
-"stock": "HGIC",
-"weight":           0.01 
-},
-{
- "date":          13781,
-"stock": "HGIC",
-"weight":           0.01 
-},
-{
- "date":          13872,
-"stock": "HGIC",
-"weight":           0.01 
-},
-{
- "date":          13963,
-"stock": "HGIC",
-"weight":           0.01 
-},
-{
- "date":          14054,
-"stock": "HGIC",
-"weight":           0.01 
-},
-{
- "date":          14152,
-"stock": "HGIC",
-"weight":           0.01 
-},
-{
- "date":          14243,
-"stock": "HGIC",
-"weight":           0.01 
-},
-{
- "date":          14334,
-"stock": "HGIC",
-"weight":           0.01 
-},
-{
- "date":          14425,
-"stock": "HGIC",
-"weight":           0.01 
-},
-{
- "date":          14516,
-"stock": "HGIC",
-"weight":           0.01 
-},
-{
- "date":          14607,
-"stock": "HGIC",
-"weight":           0.01 
-},
-{
- "date":          14698,
-"stock": "HGIC",
-"weight":           0.01 
-},
-{
- "date":          14789,
-"stock": "HGIC",
-"weight":           0.01 
-},
-{
- "date":          14880,
-"stock": "HGIC",
-"weight": 0.01496746188003 
-},
-{
- "date":          14971,
-"stock": "HGIC",
-"weight":           0.01 
-},
-{
- "date":          12689,
-"stock": "WTS",
-"weight":           0.01 
-},
-{
- "date":          12780,
-"stock": "WTS",
-"weight":           0.01 
-},
-{
- "date":          12871,
-"stock": "WTS",
-"weight":           0.01 
-},
-{
- "date":          12962,
-"stock": "WTS",
-"weight":           0.01 
-},
-{
- "date":          13053,
-"stock": "WTS",
-"weight":           0.01 
-},
-{
- "date":          13144,
-"stock": "WTS",
-"weight":           0.01 
-},
-{
- "date":          13235,
-"stock": "WTS",
-"weight":           0.01 
-},
-{
- "date":          13326,
-"stock": "WTS",
-"weight":           0.01 
-},
-{
- "date":          13417,
-"stock": "WTS",
-"weight":           0.01 
-},
-{
- "date":          13508,
-"stock": "WTS",
-"weight":           0.01 
-},
-{
- "date":          13599,
-"stock": "WTS",
-"weight":           0.01 
-},
-{
- "date":          13690,
-"stock": "WTS",
-"weight":           0.01 
-},
-{
- "date":          13781,
-"stock": "WTS",
-"weight":           0.01 
-},
-{
- "date":          13872,
-"stock": "WTS",
-"weight":           0.01 
-},
-{
- "date":          13963,
-"stock": "WTS",
-"weight":           0.01 
-},
-{
- "date":          14054,
-"stock": "WTS",
-"weight":           0.01 
-},
-{
- "date":          14152,
-"stock": "WTS",
-"weight":           0.01 
-},
-{
- "date":          14243,
-"stock": "WTS",
-"weight":           0.01 
-},
-{
- "date":          14334,
-"stock": "WTS",
-"weight":           0.01 
-},
-{
- "date":          14425,
-"stock": "WTS",
-"weight":           0.01 
-},
-{
- "date":          14516,
-"stock": "WTS",
-"weight":           0.01 
-},
-{
- "date":          14607,
-"stock": "WTS",
-"weight":           0.01 
-},
-{
- "date":          14698,
-"stock": "WTS",
-"weight":           0.01 
-},
-{
- "date":          14789,
-"stock": "WTS",
-"weight":           0.01 
-},
-{
- "date":          14880,
-"stock": "WTS",
-"weight":           0.01 
-},
-{
- "date":          14971,
-"stock": "WTS",
-"weight":           0.01 
-},
-{
- "date":          12689,
-"stock": "HTLD",
-"weight": 0.03105655740307 
-},
-{
- "date":          12780,
-"stock": "HTLD",
-"weight": 0.01121920526002 
-},
-{
- "date":          12871,
-"stock": "HTLD",
-"weight":           0.01 
-},
-{
- "date":          12962,
-"stock": "HTLD",
-"weight":           0.01 
-},
-{
- "date":          13053,
-"stock": "HTLD",
-"weight":           0.01 
-},
-{
- "date":          13144,
-"stock": "HTLD",
-"weight":           0.01 
-},
-{
- "date":          13235,
-"stock": "HTLD",
-"weight":           0.01 
-},
-{
- "date":          13326,
-"stock": "HTLD",
-"weight":           0.01 
-},
-{
- "date":          13417,
-"stock": "HTLD",
-"weight":           0.01 
-},
-{
- "date":          13508,
-"stock": "HTLD",
-"weight":           0.01 
-},
-{
- "date":          13599,
-"stock": "HTLD",
-"weight":           0.01 
-},
-{
- "date":          13690,
-"stock": "HTLD",
-"weight":           0.01 
-},
-{
- "date":          13781,
-"stock": "HTLD",
-"weight":           0.01 
-},
-{
- "date":          13872,
-"stock": "HTLD",
-"weight":           0.01 
-},
-{
- "date":          13963,
-"stock": "HTLD",
-"weight":           0.01 
-},
-{
- "date":          14054,
-"stock": "HTLD",
-"weight":           0.01 
-},
-{
- "date":          14152,
-"stock": "HTLD",
-"weight":           0.01 
-},
-{
- "date":          14243,
-"stock": "HTLD",
-"weight":           0.01 
-},
-{
- "date":          14334,
-"stock": "HTLD",
-"weight":           0.01 
-},
-{
- "date":          14425,
-"stock": "HTLD",
-"weight":           0.01 
-},
-{
- "date":          14516,
-"stock": "HTLD",
-"weight":           0.01 
-},
-{
- "date":          14607,
-"stock": "HTLD",
-"weight":           0.01 
-},
-{
- "date":          14698,
-"stock": "HTLD",
-"weight":           0.01 
-},
-{
- "date":          14789,
-"stock": "HTLD",
-"weight":           0.01 
-},
-{
- "date":          14880,
-"stock": "HTLD",
-"weight":           0.01 
-},
-{
- "date":          14971,
-"stock": "HTLD",
-"weight":           0.01 
-} 
-]
-  
-      if(!(opts.type==="pieChart" || opts.type==="sparklinePlus" || opts.type==="bulletChart")) {
-        var data = d3.nest()
-          .key(function(d){
-            //return opts.group === undefined ? 'main' : d[opts.group]
-            //instead of main would think a better default is opts.x
-            return opts.group === undefined ? opts.y : d[opts.group];
-          })
-          .entries(data);
-      }
-      
-      if (opts.disabled != undefined){
-        data.map(function(d, i){
-          d.disabled = opts.disabled[i]
-        })
-      }
-      
-      nv.addGraph(function() {
-        var chart = nv.models[opts.type]()
-          .width(opts.width)
-          .height(opts.height)
-          
-        if (opts.type != "bulletChart"){
-          chart
-            .x(function(d) { return d[opts.x] })
-            .y(function(d) { return d[opts.y] })
-        }
-          
-         
-        chart
-  .color([ "#90EE90", "#89E896", "#82E29D", "#7BDDA3", "#75D7AA", "#6ED2B0", "#67CCB7", "#61C7BD", "#5AC1C4", "#53BCCA", "#4CB6D1", "#46B1D7", "#3FABDE", "#38A6E4", "#32A0EB", "#2B9BF1", "#2495F8", "#1E90FF", "#2B96FB", "#389CF7", "#45A2F3", "#52A8EF", "#60AEEB", "#6DB4E7", "#7ABAE3", "#87C0DF", "#95C6DB", "#A2CCD7", "#AFD2D3", "#BCD8CF", "#CADECB", "#D7E4C7", "#E4EAC3", "#F1F0BF", "#FFF7BC" ])
-          
-        chart.xAxis
-  .tickFormat(function(d){
-    return d3.time.format('%b %Y')(new Date(d * 24 * 60 * 60 * 1000))
-    })
-
-        
-        
-        chart.yAxis
-  .tickFormat(function(d){
-    return d3.format('0.2%')(d)
-    })
-      
-       d3.select("#" + opts.id)
-        .append('svg')
-        .datum(data)
-        .transition().duration(500)
-        .call(chart);
-
-       nv.utils.windowResize(chart.update);
-       return chart;
-      });
-    };
-</script>
-
-
-<!--
-slide comments
--->
-
-<p>--&gt;</p>
-
-  </article>
-  <!-- Presenter Notes -->
-</slide>
-
-<slide class="" id="slide-22" style="background:;">
-  <hgroup>
-    <h2>Compute Returns</h2>
-  </hgroup>
-  <article data-timings="">
-    <pre><code class="r">ret.minVarSample &lt;- summary(opt.minVarSample)$portfolio_returns
-ret.minVarRobust &lt;- summary(opt.minVarLW)$portfolio_returns
-ret.minVar &lt;- cbind(ret.minVarSample, ret.minVarRobust)
-colnames(ret.minVar) &lt;- c(&quot;Sample&quot;, &quot;LW&quot;)
-</code></pre>
-
-<!--
-slide comments
--->
-
-  </article>
-  <!-- Presenter Notes -->
-</slide>
-
-<slide class="" id="slide-23" style="background:;">
-  <hgroup>
-    <h2>Chart Performance</h2>
-  </hgroup>
-  <article data-timings="">
-    <pre><code class="r">charts.PerformanceSummary(ret.minVar)
-</code></pre>
-
-<p><img src="figures/ret_minVar.png" alt=""></p>
-
-<!--
-slide comments
--->
-
-  </article>
-  <!-- Presenter Notes -->
-</slide>
-
-<slide class="" id="slide-24" style="background:;">
-  <hgroup>
-    <h2>Example 2: Market Neutral Portfolio</h2>
-  </hgroup>
-  <article data-timings="">
-    <p>Here we consider a portfolio of stocks. Our objective is to maximize portfolio return with a target of 0.0015 and minimize portfolio StdDev with a target of 0.02 subject to dollar neutral, beta, box, and position limit constraints. We will use the same data considered in Example 1.</p>
+    <p>Here we consider a portfolio of stocks. Our objective is to maximize portfolio return with a target of 0.0015 and minimize portfolio StdDev with a target of 0.02 subject to dollar neutral, beta, box, and position limit constraints.</p>
 
 <!--
 This involves combining several constraints. This is an MIQPQC problem that can't be solved by quadprog so we will use random portfolios. Good example of a problem with layering multiple constraints and objectives.
@@ -42567,7 +37772,7 @@ This involves combining several constraints. This is an MIQPQC problem that can'
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-25" style="background:;">
+<slide class="" id="slide-18" style="background:;">
   <hgroup>
     <h2>Specify Portfolio: Constraints</h2>
   </hgroup>
@@ -42599,7 +37804,7 @@ explain the constraints
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-26" style="background:;">
+<slide class="" id="slide-19" style="background:;">
   <hgroup>
     <h2>Specify Portfolio: Objectives</h2>
   </hgroup>
@@ -42621,13 +37826,13 @@ explain the objectives, specifically the target argument
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-27" style="background:;">
+<slide class="" id="slide-20" style="background:;">
   <hgroup>
     <h2>Run Optimization</h2>
   </hgroup>
   <article data-timings="">
     <pre><code class="r"># Generate random portfolios
-rp &lt;- random_portfolios(portf.dn, 10000, &quot;sample&quot;, eliminate=TRUE)
+rp &lt;- random_portfolios(portf.dn, 10000, &quot;sample&quot;)
 
 # Run the optimization
 opt.dn &lt;- optimize.portfolio(equity.data, portf.dn.StdDev, 
@@ -42643,7 +37848,7 @@ generate a set of random portfolios and then pass directly to optimize.portfolio
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-28" style="background:;">
+<slide class="" id="slide-21" style="background:;">
   <hgroup>
     <h2>Plot Results</h2>
   </hgroup>
@@ -42661,9 +37866,9 @@ Demonstrates the plot method. Visualize the optimal and feasible portfolios in r
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-29" style="background:;">
+<slide class="" id="slide-22" style="background:;">
   <hgroup>
-    <h2>Example 3: Data Setup</h2>
+    <h2>EDHEC Data Setup</h2>
   </hgroup>
   <article data-timings="">
     <p>Here we will look at portfolio optimization in the context of portfolio of hedge funds.</p>
@@ -42709,7 +37914,7 @@ colnames(R) &lt;- c(&quot;CA&quot;, &quot;EMN&quot;, &quot;FIA&quot;, &quot;CTAG
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-30" style="background:;">
+<slide class="" id="slide-23" style="background:;">
   <hgroup>
     <h2>Monthly Returns</h2>
   </hgroup>
@@ -42722,18 +37927,12 @@ colnames(R) &lt;- c(&quot;CA&quot;, &quot;EMN&quot;, &quot;FIA&quot;, &quot;CTAG
 * Periods of coincident drawdowns
 -->
 
-  </article>
-  <!-- Presenter Notes -->
-</slide>
-
-<slide class="" id="slide-31" style="background:;">
-  <hgroup>
-    <h2>Distribution of Monthly Returns</h2>
-  </hgroup>
-  <article data-timings="">
-    <p><img src="figures/edhec_box.png" alt=""></p>
-
 <!--
+---
+
+## Distribution of Monthly Returns
+![](figures/edhec_box.png)
+
 slide comments
 -->
 
@@ -42741,9 +37940,9 @@ slide comments
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-32" style="background:;">
+<slide class="" id="slide-24" style="background:;">
   <hgroup>
-    <h2>Minimum Expected Shortfall</h2>
+    <h2>Example 2: Minimum Expected Shortfall</h2>
   </hgroup>
   <article data-timings="">
     <p>Consider an allocation to hedge funds using the EDHEC-Risk Alternative Index as a proxy. This will be an extended example starting with an objective to minimize modified expected shortfall, then add risk budget percent contribution limit, and finally add equal risk contribution limit.</p>
@@ -42769,7 +37968,7 @@ $$ \sum_{i=1}^n x_i^2 $$
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-33" style="background:;">
+<slide class="" id="slide-25" style="background:;">
   <hgroup>
     <h2>Specify Initial Portfolio</h2>
   </hgroup>
@@ -42801,7 +38000,7 @@ Explain the initial portfolio setup
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-34" style="background:;">
+<slide class="" id="slide-26" style="background:;">
   <hgroup>
     <h2>Add Objectives</h2>
   </hgroup>
@@ -42832,7 +38031,7 @@ Key points here are that we are creating 3 new portfolios by reusing the initial
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-35" style="background:;">
+<slide class="" id="slide-27" style="background:;">
   <hgroup>
     <h2>Run Optimization</h2>
   </hgroup>
@@ -42840,8 +38039,7 @@ Key points here are that we are creating 3 new portfolios by reusing the initial
     <pre><code class="r"># Combine the 3 portfolios
 portf &lt;- combine.portfolios(list(minES=portf.minES, 
                                  minES.RB=portf.minES.RB, 
-                                 minES.EqRB=portf.minES.EqRB)
-                            )
+                                 minES.EqRB=portf.minES.EqRB))
 
 # Run the optimization
 opt.minES &lt;- optimize.portfolio(R, portf, optimize_method=&quot;DEoptim&quot;, 
@@ -42856,7 +38054,7 @@ Explain how portf is a list of portfolios and passed to optimize.portfolio
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-36" style="background:;">
+<slide class="" id="slide-28" style="background:;">
   <hgroup>
     <h2>Plot in Risk-Return Space</h2>
   </hgroup>
@@ -42871,7 +38069,7 @@ Note here how DEoptim concentrates its search space on the left hand side, towar
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-37" style="background:;">
+<slide class="" id="slide-29" style="background:;">
   <hgroup>
     <h2>Chart Risk Budgets</h2>
   </hgroup>
@@ -42887,7 +38085,7 @@ slide comments
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-38" style="background:;">
+<slide class="" id="slide-30" style="background:;">
   <hgroup>
     <h2>Set Rebalancing Parameters and Run Backtest</h2>
   </hgroup>
@@ -42918,7 +38116,7 @@ slide comments
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-39" style="background:;">
+<slide class="" id="slide-31" style="background:;">
   <hgroup>
     <h2>Min ES Risk Contributions and Weights Through Time</h2>
   </hgroup>
@@ -42934,7 +38132,7 @@ slide comments
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-40" style="background:;">
+<slide class="" id="slide-32" style="background:;">
   <hgroup>
     <h2>Min ES Risk Budget Limit Risk Contributions and Weights Through Time</h2>
   </hgroup>
@@ -42950,7 +38148,7 @@ slide comments
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-41" style="background:;">
+<slide class="" id="slide-33" style="background:;">
   <hgroup>
     <h2>Min ES Equal Component Contribution Risk Contributions and Weights Through Time</h2>
   </hgroup>
@@ -42966,7 +38164,7 @@ slide comments
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-42" style="background:;">
+<slide class="" id="slide-34" style="background:;">
   <hgroup>
     <h2>Min ES Equal Component Contribution Risk Contributions and Weights (interactive!)</h2>
   </hgroup>
@@ -42975,22 +38173,22 @@ slide comments
 <div style='float:left;width:48%;' class='centered'>
   <h4>Percent Contribution to Risk</h4>
 
-<div id = 'chart20af3c80eb0a' class = 'rChart nvd3'></div>
+<div id = 'chart345f6ed5f201' class = 'rChart nvd3'></div>
 
 <script type='text/javascript'>
  $(document).ready(function(){
-      drawchart20af3c80eb0a()
+      drawchart345f6ed5f201()
     });
-    function drawchart20af3c80eb0a(){  
+    function drawchart345f6ed5f201(){  
       var opts = {
- "dom": "chart20af3c80eb0a",
+ "dom": "chart345f6ed5f201",
 "width":    450,
 "height":    400,
 "x": "date",
 "y": "risk",
 "group": "fund",
 "type": "multiBarChart",
-"id": "chart20af3c80eb0a" 
+"id": "chart345f6ed5f201" 
 },
         data = [
  {
@@ -43955,22 +39153,22 @@ slide comments
 <div style='float:right;width:48%;'>
   <h4>Weights</h4>
 
-<div id = 'chart20af3e24e68a' class = 'rChart nvd3'></div>
+<div id = 'chart345f4423585e' class = 'rChart nvd3'></div>
 
 <script type='text/javascript'>
  $(document).ready(function(){
-      drawchart20af3e24e68a()
+      drawchart345f4423585e()
     });
-    function drawchart20af3e24e68a(){  
+    function drawchart345f4423585e(){  
       var opts = {
- "dom": "chart20af3e24e68a",
+ "dom": "chart345f4423585e",
 "width":    450,
 "height":    400,
 "x": "date",
 "y": "weight",
 "group": "stock",
 "type": "multiBarChart",
-"id": "chart20af3e24e68a" 
+"id": "chart345f4423585e" 
 },
         data = [
  {
@@ -44940,7 +40138,7 @@ slide comments
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-43" style="background:;">
+<slide class="" id="slide-35" style="background:;">
   <hgroup>
     <h2>Compute Returns</h2>
   </hgroup>
@@ -44958,7 +40156,7 @@ Recall that bt.opt.minES is a list where each element is an optimize.portfolio.r
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-44" style="background:;">
+<slide class="" id="slide-36" style="background:;">
   <hgroup>
     <h2>Chart Performance</h2>
   </hgroup>
@@ -44976,9 +40174,9 @@ slide comments
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-45" style="background:;">
+<slide class="" id="slide-37" style="background:;">
   <hgroup>
-    <h2>Example 4: Maximize CRRA</h2>
+    <h2>Example 3: Maximize CRRA</h2>
   </hgroup>
   <article data-timings="">
     <p>Consider an allocation to hedge funds using the EDHEC-Risk Alternative Index as a proxy. Our objective to maximize the fourth order expansion of the Constant Relative Risk Aversion (CRRA) expected utility function as in the Boudt paper and Martellini paper. We use the same data as Example 3.</p>
@@ -45000,7 +40198,7 @@ EU_{\lambda}(w) = - \frac{\lambda}{2} m_{(2)}(w) +
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-46" style="background:;">
+<slide class="" id="slide-38" style="background:;">
   <hgroup>
     <h2>Define a function to compute CRRA</h2>
   </hgroup>
@@ -45026,7 +40224,7 @@ The function arguments should have 'R' as the name of the returns and 'weights' 
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-47" style="background:;">
+<slide class="" id="slide-39" style="background:;">
   <hgroup>
     <h2>Define a custom moment function</h2>
   </hgroup>
@@ -45051,7 +40249,7 @@ The set.portfolio.moments looks for the most common objective function names e.g
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-48" style="background:;">
+<slide class="" id="slide-40" style="background:;">
   <hgroup>
     <h2>Specify Portfolio</h2>
   </hgroup>
@@ -45081,7 +40279,7 @@ Focus on how CRRA is added as an objective and the lambda argument is passed
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-49" style="background:;">
+<slide class="" id="slide-41" style="background:;">
   <hgroup>
     <h2>&quot;Dummy&quot; Objectives</h2>
   </hgroup>
@@ -45101,7 +40299,7 @@ portf.crra &lt;- add.objective(portf.crra, type=&quot;risk&quot;, name=&quot;Std
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-50" style="background:;">
+<slide class="" id="slide-42" style="background:;">
   <hgroup>
     <h2>Run Optimization</h2>
   </hgroup>
@@ -45134,7 +40332,7 @@ remember to specify a momentFUN to match the arguments in CRRA
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-51" style="background:;">
+<slide class="" id="slide-43" style="background:;">
   <hgroup>
     <h2>Chart Results</h2>
   </hgroup>
@@ -45154,7 +40352,7 @@ It is very interesting to look at the feasible space in terms of different measu
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-52" style="background:;">
+<slide class="" id="slide-44" style="background:;">
   <hgroup>
     <h2>Run Backtest and Compute Returns</h2>
   </hgroup>
@@ -45180,7 +40378,7 @@ Run optimization and extract the portfolio rebalancing returns from the summary 
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-53" style="background:;">
+<slide class="" id="slide-45" style="background:;">
   <hgroup>
     <h2>Chart Weights Through Time</h2>
   </hgroup>
@@ -45198,7 +40396,7 @@ slide comments
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-54" style="background:;">
+<slide class="" id="slide-46" style="background:;">
   <hgroup>
     <h2>Chart Performance</h2>
   </hgroup>
@@ -45217,7 +40415,7 @@ slide comments
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-55" style="background:;">
+<slide class="" id="slide-47" style="background:;">
   <hgroup>
     <h2>Conclusion</h2>
   </hgroup>
@@ -45240,7 +40438,7 @@ slide comments
 
 <ul>
 <li>Google: funding for Google Summer of Code (GSoC)</li>
-<li>UW CF &amp; RM Program: continued work on PortfolioAnalytics</li>
+<li>UW CF&amp;RM Program: continued work on PortfolioAnalytics</li>
 <li>GSoC Mentors: Brian Peterson, Peter Carl, Doug Martin, and Guy Yollin</li>
 <li>R/Finance Committee</li>
 </ul>
@@ -45256,7 +40454,44 @@ slide comments
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-56" style="background:;">
+<slide class="" id="slide-48" style="background:;">
+  <hgroup>
+    <h2>PortfolioAnalytics Links</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>PortfolioAnalytics is on R-Forge in the ReturnAnalytics project</p>
+
+<ul>
+<li><a href="https://r-forge.r-project.org/projects/returnanalytics/">PortfolioAnalytics</a></li>
+</ul>
+
+<p>Source code for the slides</p>
+
+<ul>
+<li><a href="https://github.com/rossb34/PortfolioAnalyticsPresentation">https://github.com/rossb34/PortfolioAnalyticsPresentation</a></li>
+</ul>
+
+<p>and view it here</p>
+
+<ul>
+<li><a href="http://rossb34.github.io/PortfolioAnalyticsPresentation/">http://rossb34.github.io/PortfolioAnalyticsPresentation/</a></li>
+</ul>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-49" style="background:;">
+  <hgroup>
+    <h2>Any Questions?</h2>
+  </hgroup>
+  <article data-timings="">
+    
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-50" style="background:;">
   <hgroup>
     <h2>References and Useful Links</h2>
   </hgroup>
@@ -45271,7 +40506,6 @@ slide comments
 <li><a href="http://papers.ssrn.com/sol3/papers.cfm?abstract_id=1856476">W.T. Shaw Random Portfolios</a></li>
 <li>Martellini paper</li>
 <li>Boudt paper</li>
-<li><a href="https://r-forge.r-project.org/projects/returnanalytics/">PortfolioAnalytics on R-Forge</a></li>
 <li><a href="http://spark.rstudio.com/rossbennett3/PortfolioOptimization/">Shiny App</a></li>
 </ul>
 
@@ -45369,7 +40603,7 @@ slide comments
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=15 title='Example 1: Data Setup'>
+        data-slide=15 title='Stock Data Setup'>
          15
       </a>
     </li>
@@ -45381,19 +40615,19 @@ slide comments
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=17 title='Minimum Variance Portfolio'>
+        data-slide=17 title='Example 1: Market Neutral Portfolio'>
          17
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=18 title='Specify Portfolio'>
+        data-slide=18 title='Specify Portfolio: Constraints'>
          18
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=19 title='Ledoit-Wolf Shrinkage Estimate'>
+        data-slide=19 title='Specify Portfolio: Objectives'>
          19
       </a>
     </li>
@@ -45405,37 +40639,37 @@ slide comments
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=21 title='Chart Weights Through Time'>
+        data-slide=21 title='Plot Results'>
          21
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=22 title='Compute Returns'>
+        data-slide=22 title='EDHEC Data Setup'>
          22
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=23 title='Chart Performance'>
+        data-slide=23 title='Monthly Returns'>
          23
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=24 title='Example 2: Market Neutral Portfolio'>
+        data-slide=24 title='Example 2: Minimum Expected Shortfall'>
          24
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=25 title='Specify Portfolio: Constraints'>
+        data-slide=25 title='Specify Initial Portfolio'>
          25
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=26 title='Specify Portfolio: Objectives'>
+        data-slide=26 title='Add Objectives'>
          26
       </a>
     </li>
@@ -45447,176 +40681,140 @@ slide comments
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=28 title='Plot Results'>
+        data-slide=28 title='Plot in Risk-Return Space'>
          28
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=29 title='Example 3: Data Setup'>
+        data-slide=29 title='Chart Risk Budgets'>
          29
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=30 title='Monthly Returns'>
+        data-slide=30 title='Set Rebalancing Parameters and Run Backtest'>
          30
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=31 title='Distribution of Monthly Returns'>
+        data-slide=31 title='Min ES Risk Contributions and Weights Through Time'>
          31
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=32 title='Minimum Expected Shortfall'>
+        data-slide=32 title='Min ES Risk Budget Limit Risk Contributions and Weights Through Time'>
          32
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=33 title='Specify Initial Portfolio'>
+        data-slide=33 title='Min ES Equal Component Contribution Risk Contributions and Weights Through Time'>
          33
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=34 title='Add Objectives'>
+        data-slide=34 title='Min ES Equal Component Contribution Risk Contributions and Weights (interactive!)'>
          34
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=35 title='Run Optimization'>
+        data-slide=35 title='Compute Returns'>
          35
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=36 title='Plot in Risk-Return Space'>
+        data-slide=36 title='Chart Performance'>
          36
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=37 title='Chart Risk Budgets'>
+        data-slide=37 title='Example 3: Maximize CRRA'>
          37
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=38 title='Set Rebalancing Parameters and Run Backtest'>
+        data-slide=38 title='Define a function to compute CRRA'>
          38
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=39 title='Min ES Risk Contributions and Weights Through Time'>
+        data-slide=39 title='Define a custom moment function'>
          39
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=40 title='Min ES Risk Budget Limit Risk Contributions and Weights Through Time'>
+        data-slide=40 title='Specify Portfolio'>
          40
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=41 title='Min ES Equal Component Contribution Risk Contributions and Weights Through Time'>
+        data-slide=41 title='&quot;Dummy&quot; Objectives'>
          41
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=42 title='Min ES Equal Component Contribution Risk Contributions and Weights (interactive!)'>
+        data-slide=42 title='Run Optimization'>
          42
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=43 title='Compute Returns'>
+        data-slide=43 title='Chart Results'>
          43
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=44 title='Chart Performance'>
+        data-slide=44 title='Run Backtest and Compute Returns'>
          44
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=45 title='Example 4: Maximize CRRA'>
+        data-slide=45 title='Chart Weights Through Time'>
          45
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=46 title='Define a function to compute CRRA'>
+        data-slide=46 title='Chart Performance'>
          46
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=47 title='Define a custom moment function'>
+        data-slide=47 title='Conclusion'>
          47
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=48 title='Specify Portfolio'>
+        data-slide=48 title='PortfolioAnalytics Links'>
          48
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=49 title='&quot;Dummy&quot; Objectives'>
+        data-slide=49 title='Any Questions?'>
          49
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=50 title='Run Optimization'>
+        data-slide=50 title='References and Useful Links'>
          50
-      </a>
-    </li>
-    <li>
-      <a href="#" target="_self" rel='tooltip' 
-        data-slide=51 title='Chart Results'>
-         51
-      </a>
-    </li>
-    <li>
-      <a href="#" target="_self" rel='tooltip' 
-        data-slide=52 title='Run Backtest and Compute Returns'>
-         52
-      </a>
-    </li>
-    <li>
-      <a href="#" target="_self" rel='tooltip' 
-        data-slide=53 title='Chart Weights Through Time'>
-         53
-      </a>
-    </li>
-    <li>
-      <a href="#" target="_self" rel='tooltip' 
-        data-slide=54 title='Chart Performance'>
-         54
-      </a>
-    </li>
-    <li>
-      <a href="#" target="_self" rel='tooltip' 
-        data-slide=55 title='Conclusion'>
-         55
-      </a>
-    </li>
-    <li>
-      <a href="#" target="_self" rel='tooltip' 
-        data-slide=56 title='References and Useful Links'>
-         56
       </a>
     </li>
   </ul>
