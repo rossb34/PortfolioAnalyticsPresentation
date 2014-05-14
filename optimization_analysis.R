@@ -11,8 +11,11 @@ figures.dir <- "figures"
 fig.height <- 450
 fig.width <- 950
 
+# mix of blue, green, and red hues
+my_colors <- c("#a6cee3", "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99", "#e31a1c")
 
-##### Example 1 #####
+
+##### Ledoit-Wolf Shrinkage Example #####
 load(paste(results.dir, "opt.minVarSample.rda", sep="/"))
 load(paste(results.dir, "opt.minVarLW.rda", sep="/"))
 
@@ -49,7 +52,7 @@ png(paste(figures.dir, "ret_minVar.png", sep="/"), height = fig.height, width = 
 charts.PerformanceSummary(ret.minVar, colorset=bluemono)
 dev.off()
 
-##### Example 2 #####
+##### Market Neutral Example #####
 load(paste(results.dir, "opt.dn.rda", sep="/"))
 
 png(paste(figures.dir, "opt_dn.png", sep="/"), height = fig.height, width = fig.width)
@@ -131,39 +134,39 @@ dev.off()
 # Plot the risk contribution  of portfolio 1 through time
 png(paste(figures.dir, "risk_minES.png", sep="/"))
 chart.RiskBudget(bt.opt.minES[[1]], main="Min ES Risk Contribution", 
-                 risk.type="percentage", col=bluemono)
+                 risk.type="percentage", col=my_colors)
 dev.off()
 # Plot the risk contribution  of portfolio 1 through time
 png(paste(figures.dir, "weights_minES.png", sep="/"))
-chart.Weights(bt.opt.minES[[1]], main="Min ES Weights", col=bluemono)
+chart.Weights(bt.opt.minES[[1]], main="Min ES Weights", col=my_colors)
 dev.off()
 
 # Plot the risk contribution  of portfolio 3 through time
 png(paste(figures.dir, "risk_minESRB.png", sep="/"))
 chart.RiskBudget(bt.opt.minES[[2]], main="Min ES RB Risk Contribution",
-                 risk.type="percentage", col=bluemono)
+                 risk.type="percentage", col=my_colors)
 dev.off()
 # Plot the weights of portfolio 2 through time
 png(paste(figures.dir, "weights_minESRB.png", sep="/"))
-chart.Weights(bt.opt.minES[[2]], main="Min ES RB Weights", col=bluemono)
+chart.Weights(bt.opt.minES[[2]], main="Min ES RB Weights", col=my_colors)
 dev.off()
 
 # Plot the risk contribution  of portfolio 3 through time
 png(paste(figures.dir, "risk_minESEqRB.png", sep="/"))
 chart.RiskBudget(bt.opt.minES[[3]], main="Min ES EqRB Risk Contribution",
-                 risk.type="percentage", col=bluemono)
+                 risk.type="percentage", col=my_colors)
 dev.off()
 # Plot the weights of portfolio 3 through time
 png(paste(figures.dir, "weights_minESEqRB.png", sep="/"))
-chart.Weights(bt.opt.minES[[3]], main="Min ES EqRB Weights", col=bluemono)
+chart.Weights(bt.opt.minES[[3]], main="Min ES EqRB Weights", col=my_colors)
 dev.off()
 
 bt_w3 <- nvd3WeightsPlot(bt.opt.minES[[3]], "multiBarChart")
-bt_w3$chart(color = PerformanceAnalytics::bluemono)
+bt_w3$chart(color = my_colors)
 save(bt_w3, file=paste(figures.dir, "bt_w3.rda", sep="/"))
 
 bt_rb3 <- nvd3RiskPlot(bt.opt.minES[[3]], "multiBarChart")
-bt_rb3$chart(color = PerformanceAnalytics::bluemono)
+bt_rb3$chart(color = my_colors)
 save(bt_rb3, file=paste(figures.dir, "bt_rb3.rda", sep="/"))
 
 # Extract the returns from each element and chart the performance summary
@@ -172,7 +175,7 @@ ret.bt.opt <- do.call(cbind, lapply(bt.opt.minES,
 colnames(ret.bt.opt) <- c("min ES", "min ES RB", "min ES Eq RB")
 
 png(paste(figures.dir, "ret_minES.png", sep="/"), height = fig.height, width = fig.width)
-charts.PerformanceSummary(ret.bt.opt, colorset=bluemono)
+charts.PerformanceSummary(ret.bt.opt, colorset=my_colors[c(2,4,6)])
 dev.off()
 
 ###
@@ -208,7 +211,7 @@ chart.RiskReward(opt.crra, risk.col="StdDev")
 dev.off()
 
 png(paste(figures.dir, "weights_crra.png", sep="/"), height = fig.height, width = fig.width)
-chart.Weights(bt.opt.crra, main="CRRA Weights", col=bluemono)
+chart.Weights(bt.opt.crra, main="CRRA Weights", col=my_colors)
 dev.off()
 
 # Compute the portfolio returns with rebalancing
@@ -219,6 +222,6 @@ colnames(ret.crra) <- "CRRA"
 png(paste(figures.dir, "ret_crra.png", sep="/"), height = fig.height, width = fig.width)
 charts.PerformanceSummary(cbind(ret.bt.opt, ret.crra), 
                           main="Optimization Performance",
-                          colorset=c(bluemono[1:3], "black"))
+                          colorset=c(my_colors[c(2,4,6)], "black"))
 dev.off()
 

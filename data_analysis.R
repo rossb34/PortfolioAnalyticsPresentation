@@ -4,8 +4,11 @@ source("data_prep.R")
 
 figures.dir <- "figures"
 
+# mix of blue, green, and red hues
+my_colors <- c("#a6cee3", "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99", "#e31a1c")
+
 ##### Equity Data for Example 1 and Example 2 #####
-colors <- c(rep(bluemono[1], 15), rep(bluemono[4], 15), rep(bluemono[8], 5))
+colors <- c(rep(my_colors[1], 15), rep(my_colors[2], 15), rep(my_colors[3], 5))
 sd.order <- order(StdDev(equity.data))
 
 # boxplot to compare return distributions
@@ -17,7 +20,7 @@ boxplot(coredata(equity.data[,sd.order]),
         col=colors[sd.order],
         main="Return Distribution\n(sorted by StdDev)")
 legend("topleft", legend=c("Large Cap", "Mid Cap", "Small Cap"), 
-       fill=c(bluemono[1], bluemono[4], bluemono[8]), bty="n", cex=0.8)
+       fill=c(my_colors[1], my_colors[2], my_colors[3]), bty="n", cex=0.8)
 dev.off()
 
 ##### edhec Data for Example 3 and Example 4 #####
@@ -25,16 +28,16 @@ p <- 0.95
 
 png(paste(figures.dir, "relative_barvar.png", sep="/"))
 charts.BarVaR(R[,1:3], width=60, methods=c("ModifiedES", "ModifiedVaR"), 
-              main="Relative Value", colorset=rep(bluemono[1], 3))
+              main="Relative Value", colorset=rep(my_colors[2], 3))
 dev.off()
 
 png(paste(figures.dir, "directional_barvar.png", sep="/"))
 charts.BarVaR(R[,4:6], width=60, methods=c("ModifiedES", "ModifiedVaR"), 
-              main="Directional", colorset=rep(bluemono[4], 3))
+              main="Directional", colorset=rep(my_colors[4], 3))
 dev.off()
 
 
-colors <- c(rep(bluemono[1], 3), rep(bluemono[4], 3))
+colors <- c(rep(my_colors[2], 3), rep(my_colors[4], 3))
 ES.order <- order(ES(R, p=p, invert=FALSE))
 
 png(paste(figures.dir, "edhec_box.png", sep="/"), height = 500, width = 1000)
@@ -43,7 +46,7 @@ boxplot(coredata(R[,ES.order]),
         col=colors[ES.order],
         main="Return Distribution\n(sorted by Modified ES (95%))")
 legend("topleft", legend=c("Relative Value", "Directional"), 
-       fill=c(bluemono[1], bluemono[4]), bty="n", cex=0.8)
+       fill=c(my_colors[1], my_colors[2]), bty="n", cex=0.8)
 dev.off()
 
 # script for data analysis

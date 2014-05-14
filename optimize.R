@@ -38,6 +38,9 @@
 # Set the directory to save the optimization results
 results.dir <- "optimization_results"
 
+# mix of blue, green, and red hues
+my_colors <- c("#a6cee3", "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99", "#e31a1c")
+
 # Load the packages
 library(PortfolioAnalytics)
 library(foreach)
@@ -384,6 +387,7 @@ if(file.exists("figures/rp_plot.png") & file.exists("figures/rp_viz.rda")){
     axisLabel = 'Return'
     ,tickFormat = "#!d3.format('0.4f')!#" 
   )
+  rp_viz$chart(color = my_colors[c(2,4,6)])
   #set left margin so y axis label will show up
   rp_viz$chart( margin = list(left = 100) )
   rp_viz$chart(
@@ -405,15 +409,15 @@ if(file.exists("figures/rp_plot.png") & file.exists("figures/rp_viz.rda")){
   
   png("figures/rp_plot.png", height = 500, width = 1000)
   # plot feasible portfolios 
-  plot(x=rp1_StdDev, y=rp1_mean, col="gray", main="Random Portfolio Methods",
+  plot(x=rp1_StdDev, y=rp1_mean, col=my_colors[2], main="Random Portfolio Methods",
        ylab="mean", xlab="StdDev", xlim=c(x.lower, x.upper), 
        ylim=c(y.lower, y.upper))
-  points(x=rp2_StdDev, y=rp2_mean, col="red", pch=2)
-  points(x=rp3_StdDev, y=rp3_mean, col="green", pch=5)
+  points(x=rp2_StdDev, y=rp2_mean, col=my_colors[4], pch=2)
+  points(x=rp3_StdDev, y=rp3_mean, col=my_colors[6], pch=5)
   points(x=x.assets, y=y.assets)
   text(x=x.assets, y=y.assets, labels=colnames(R), pos=4, cex=0.8)
   legend("bottomright", legend=c("sample", "simplex", "grid"), 
-         col=c("gray", "red", "green"),
+         col=my_colors[c(2,4,6)],
          pch=c(1, 2, 5), bty="n")
   dev.off()
 }
