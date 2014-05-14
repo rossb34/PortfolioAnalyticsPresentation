@@ -390,13 +390,13 @@ if(file.exists("figures/rp_plot.png") & file.exists("figures/rp_viz.rda")){
   rp_viz$chart(color = my_colors[c(2,4,6)])
   #set left margin so y axis label will show up
   rp_viz$chart( margin = list(left = 100) )
-  rp_viz$chart(
-    tooltipContent = "#!
-    function(a,b,c,d) {
-    //d has all the info  you need
-    return( '<h3>' + d.point.series + '</h3>Return: ' + d.point.y  +  '<br>Risk: ' + d.point.x)
-    }
-    !#")
+#   rp_viz$chart(
+#     tooltipContent = "#!
+#     function(a,b,c,d) {
+#     //d has all the info  you need
+#     return( '<h3>' + d.point.series + '</h3>Return: ' + d.point.y  +  '<br>Risk: ' + d.point.x)
+#     }
+#     !#")
   ####if you do not want fisheye/magnify
   ####let me know, and will show how to remove
   ####this will solve the tooltip problem
