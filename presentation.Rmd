@@ -257,6 +257,7 @@ Brief explanation of each function.
 Here we will look at portfolio optimization in the context of stocks.
 
 * Selection of large cap, mid cap, and small cap stocks from CRSP data
+* Weekly data from 1/7/1997 to 12/28/2010
 * 15 Large Cap
 * 15 Mid Cap
 * 5 Small Cap
@@ -293,10 +294,10 @@ This involves combining several constraints. This is an MIQPQC problem that can'
 
 ## Specify Portfolio: Constraints
 ```{r, eval=FALSE, tidy=FALSE}
-portf.init <- portfolio.spec(stocks)
+portf.dn <- portfolio.spec(stocks)
 
 # Add constraint such that the portfolio weights sum to 0*
-portf.dn <- add.constraint(portf.init, type="weight_sum", 
+portf.dn <- add.constraint(portf.dn, type="weight_sum", 
                                   min_sum=-0.01, max_sum=0.01)
 
 # Add box constraint such that no asset can have a weight of greater than

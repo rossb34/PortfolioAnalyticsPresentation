@@ -37714,6 +37714,7 @@ Brief explanation of each function.
 
 <ul>
 <li>Selection of large cap, mid cap, and small cap stocks from CRSP data</li>
+<li>Weekly data from 1/7/1997 to 12/28/2010</li>
 <li>15 Large Cap</li>
 <li>15 Mid Cap</li>
 <li>5 Small Cap</li>
@@ -37767,10 +37768,10 @@ This involves combining several constraints. This is an MIQPQC problem that can'
     <h2>Specify Portfolio: Constraints</h2>
   </hgroup>
   <article data-timings="">
-    <pre><code class="r">portf.init &lt;- portfolio.spec(stocks)
+    <pre><code class="r">portf.dn &lt;- portfolio.spec(stocks)
 
 # Add constraint such that the portfolio weights sum to 0*
-portf.dn &lt;- add.constraint(portf.init, type=&quot;weight_sum&quot;, 
+portf.dn &lt;- add.constraint(portf.dn, type=&quot;weight_sum&quot;, 
                                   min_sum=-0.01, max_sum=0.01)
 
 # Add box constraint such that no asset can have a weight of greater than
@@ -38163,22 +38164,22 @@ slide comments
 <div style='float:left;width:48%;' class='centered'>
   <h4>Percent Contribution to Risk</h4>
 
-<div id = 'chart429c679b51a7' class = 'rChart nvd3'></div>
+<div id = 'chart43e629e31ef' class = 'rChart nvd3'></div>
 
 <script type='text/javascript'>
  $(document).ready(function(){
-      drawchart429c679b51a7()
+      drawchart43e629e31ef()
     });
-    function drawchart429c679b51a7(){  
+    function drawchart43e629e31ef(){  
       var opts = {
- "dom": "chart429c679b51a7",
+ "dom": "chart43e629e31ef",
 "width":    450,
 "height":    400,
 "x": "date",
 "y": "risk",
 "group": "fund",
 "type": "multiBarChart",
-"id": "chart429c679b51a7" 
+"id": "chart43e629e31ef" 
 },
         data = [
  {
@@ -39143,22 +39144,22 @@ slide comments
 <div style='float:right;width:48%;'>
   <h4>Weights</h4>
 
-<div id = 'chart429c64c395e6' class = 'rChart nvd3'></div>
+<div id = 'chart43e614fc3d46' class = 'rChart nvd3'></div>
 
 <script type='text/javascript'>
  $(document).ready(function(){
-      drawchart429c64c395e6()
+      drawchart43e614fc3d46()
     });
-    function drawchart429c64c395e6(){  
+    function drawchart43e614fc3d46(){  
       var opts = {
- "dom": "chart429c64c395e6",
+ "dom": "chart43e614fc3d46",
 "width":    450,
 "height":    400,
 "x": "date",
 "y": "weight",
 "group": "stock",
 "type": "multiBarChart",
-"id": "chart429c64c395e6" 
+"id": "chart43e614fc3d46" 
 },
         data = [
  {
